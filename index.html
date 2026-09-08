@@ -523,8 +523,19 @@
     background:var(--panel);border:1px solid var(--line);border-radius:14px;
     padding:14px 16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px;
   }
-  .book-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}
-  .book-name{font-weight:600;font-size:14px;}
+  .book-head{display:flex;align-items:center;gap:9px;}
+  .book-order{
+    flex:none;width:22px;height:22px;border-radius:7px;
+    background:var(--panel-2);border:1px solid var(--line);color:var(--text-faint);
+    font-family:"JetBrains Mono",monospace;font-size:11px;font-weight:600;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .book-name{font-weight:600;font-size:14px;flex:1;min-width:0;}
+  .book-note{display:block;font-size:11.5px;color:var(--text-faint);font-weight:500;margin-top:1px;}
+  .book-pair{display:flex;flex-direction:column;gap:6px;}
+  .book-pair + .book-pair{
+    margin-top:4px;padding-top:10px;border-top:1px dashed var(--line);
+  }
   .book-link{
     display:block;text-decoration:none;font-size:13px;font-weight:600;
     color:var(--accent);background:var(--accent-soft);border:1px solid var(--accent-line);
@@ -1448,40 +1459,59 @@
     var s = String(u || "").trim();
     return /^https?:\/\//i.test(s) ? s : "";
   }
-  // Для підручників комбіновані уроки («Заруб. літ. / Трудове навчання»)
-  // розкладаємо на окремі предмети, а скорочення зводимо до повної назви.
-  var SUBJECT_ALIASES = { "Заруб. літ.": "Зарубіжна література" };
-  function subjectsOfSemester(sem){
-    var sch = scheduleFor(sem), seen = {}, out = [];
-    for (var d = 1; d <= 5; d++){
-      (sch[d] || []).forEach(function(item){
-        subjectKey(item).split(" / ").forEach(function(part){
-          var name = part.trim();
-          name = SUBJECT_ALIASES[name] || name;
-          if (name && !seen[name]){ seen[name] = 1; out.push(name); }
-        });
-      });
-    }
-    return out.sort(function(a, b){ return a.localeCompare(b, "uk"); });
+  // Порядок за частотою використання, а не за алфавітом чи розкладом.
+  // slots — скільки підручників очікується у предмета.
+  var BOOK_SUBJECTS = [
+    { name: "Математика", note: "алгебра / геометрія" },
+    { name: "Українська мова", slots: 2 },
+    { name: "Фізика" },
+    { name: "Хімія" },
+    { name: "Астрономія" },
+    { name: "Географія" },
+    { name: "Українська література" },
+    { name: "Зарубіжна література" },
+    { name: "Біологія" },
+    { name: "Англійська мова" },
+    { name: "Історія України" },
+    { name: "Всесвітня історія" },
+    { name: "Трудове навчання" },
+    { name: "Інформатика" }
+  ];
+
+  // Записи зберігаються як {items:[{book,gdz}]}; старий формат {book,gdz} підхоплюємо.
+  function bookItems(name){
+    var rec = books[name];
+    if (!rec) return [];
+    if (Array.isArray(rec.items)) return rec.items;
+    if (rec.book || rec.gdz) return [{ book: rec.book || "", gdz: rec.gdz || "" }];
+    return [];
   }
 
   function renderBooks(){
-    var sem = scheduleSem === null ? semesterOf(new Date()) : scheduleSem;
-    var list = subjectsOfSemester(sem);
     var html = "";
 
-    list.forEach(function(name){
-      var rec = books[name] || {};
-      var bookUrl = safeUrl(rec.book), gdzUrl = safeUrl(rec.gdz);
+    BOOK_SUBJECTS.forEach(function(subj, order){
+      var name = subj.name;
+      var items = bookItems(name);
+      var minSlots = subj.slots || 1;
+      var noteHtml = subj.note ? '<span class="book-note">' + escapeHtml(subj.note) + '</span>' : "";
 
       if (booksEditing === name){
+        var count = Math.max(items.length, minSlots) + 1;   // ще один порожній — щоб додати
+        var fields = "";
+        for (var i = 0; i < count; i++){
+          var it = items[i] || {};
+          var many = count > 2;
+          fields +=
+            '<label class="book-label">Підручник' + (many ? " " + (i + 1) : "") + '</label>' +
+            '<input class="book-input" data-idx="' + i + '" data-role="book" type="url" inputmode="url" placeholder="https://..." value="' + escapeHtml(it.book || "") + '">' +
+            '<label class="book-label">ГДЗ до нього</label>' +
+            '<input class="book-input" data-idx="' + i + '" data-role="gdz" type="url" inputmode="url" placeholder="https://..." value="' + escapeHtml(it.gdz || "") + '">';
+        }
         html +=
           '<div class="book-row editing">' +
-            '<div class="book-name">' + escapeHtml(name) + '</div>' +
-            '<label class="book-label">Підручник</label>' +
-            '<input class="book-input" id="bk-book" type="url" inputmode="url" placeholder="https://..." value="' + escapeHtml(rec.book || "") + '">' +
-            '<label class="book-label">ГДЗ до нього</label>' +
-            '<input class="book-input" id="bk-gdz" type="url" inputmode="url" placeholder="https://..." value="' + escapeHtml(rec.gdz || "") + '">' +
+            '<div class="book-name">' + escapeHtml(name) + noteHtml + '</div>' +
+            fields +
             '<div class="book-actions">' +
               '<button class="btn-save" type="button" data-bact="save" data-name="' + escapeHtml(name) + '">Зберегти</button>' +
               '<button class="btn-cancel" type="button" data-bact="cancel">Скасувати</button>' +
@@ -1490,29 +1520,42 @@
         return;
       }
 
+      var slots = Math.max(items.length, minSlots);
+      var links = "";
+      for (var s = 0; s < slots; s++){
+        var rec = items[s] || {};
+        var bookUrl = safeUrl(rec.book), gdzUrl = safeUrl(rec.gdz);
+        var tag = slots > 1 ? " " + (s + 1) : "";
+        links +=
+          '<div class="book-pair">' +
+            (bookUrl
+              ? '<a class="book-link" href="' + escapeHtml(bookUrl) + '" target="_blank" rel="noopener noreferrer">Підручник' + tag + '</a>'
+              : '<button class="book-empty" type="button" data-bact="edit" data-name="' + escapeHtml(name) + '">Підручник' + tag + ' — додати</button>') +
+            (gdzUrl
+              ? '<a class="book-link gdz" href="' + escapeHtml(gdzUrl) + '" target="_blank" rel="noopener noreferrer">ГДЗ' + tag + '</a>'
+              : '<button class="book-empty gdz" type="button" data-bact="edit" data-name="' + escapeHtml(name) + '">ГДЗ' + tag + ' — додати</button>') +
+          '</div>';
+      }
+
       html +=
         '<div class="book-row">' +
           '<div class="book-head">' +
-            '<span class="book-name">' + escapeHtml(name) + '</span>' +
+            '<span class="book-order">' + (order + 1) + '</span>' +
+            '<span class="book-name">' + escapeHtml(name) + noteHtml + '</span>' +
             '<button class="icon-btn" type="button" data-bact="edit" data-name="' + escapeHtml(name) + '" aria-label="Змінити посилання">✎</button>' +
-          '</div>' +
-          (bookUrl
-            ? '<a class="book-link" href="' + escapeHtml(bookUrl) + '" target="_blank" rel="noopener noreferrer">Підручник</a>'
-            : '<button class="book-empty" type="button" data-bact="edit" data-name="' + escapeHtml(name) + '">Підручник — додати посилання</button>') +
-          (gdzUrl
-            ? '<a class="book-link gdz" href="' + escapeHtml(gdzUrl) + '" target="_blank" rel="noopener noreferrer">ГДЗ</a>'
-            : '<button class="book-empty gdz" type="button" data-bact="edit" data-name="' + escapeHtml(name) + '">ГДЗ — додати посилання</button>') +
+          '</div>' + links +
         '</div>';
     });
 
     document.getElementById("booksBody").innerHTML =
-      '<p class="books-hint">Предмети ' + (sem === 1 ? "першого" : "другого") + ' семестру. ' +
-      'Під кожним підручником — ГДЗ саме до нього. Посилання спільні для всього класу, якщо ввімкнено спільний режим.</p>' +
+      '<p class="books-hint">Порядок — за тим, як часто книжка потрібна. ' +
+      'Під кожним підручником стоїть ГДЗ саме до нього. ' +
+      'Посилання спільні для класу, якщо ввімкнено спільний режим.</p>' +
       '<div class="book-list">' + html + '</div>';
 
     if (booksEditing){
-      var inp = document.getElementById("bk-book");
-      if (inp) inp.focus();
+      var first = document.querySelector('.book-row.editing .book-input');
+      if (first) first.focus();
     }
   }
 
@@ -1704,14 +1747,27 @@
     else if (act === "cancel"){ booksEditing = null; renderBooks(); }
     else if (act === "save"){
       var name = b.getAttribute("data-name");
-      var bookVal = document.getElementById("bk-book").value.trim();
-      var gdzVal = document.getElementById("bk-gdz").value.trim();
-      if ((bookVal && !safeUrl(bookVal)) || (gdzVal && !safeUrl(gdzVal))){
-        toast("Посилання має починатися з https://");
-        return;
-      }
-      if (!bookVal && !gdzVal) delete books[name];
-      else books[name] = { book: bookVal, gdz: gdzVal };
+      var pairs = {}, bad = false;
+      Array.prototype.forEach.call(
+        document.querySelectorAll(".book-row.editing .book-input"),
+        function(inp){
+          var i = inp.getAttribute("data-idx");
+          var val = inp.value.trim();
+          if (val && !safeUrl(val)) bad = true;
+          pairs[i] = pairs[i] || { book: "", gdz: "" };
+          pairs[i][inp.getAttribute("data-role")] = val;
+        }
+      );
+      if (bad){ toast("Посилання має починатися з https://"); return; }
+
+      var items = Object.keys(pairs)
+        .sort(function(a, c){ return a - c; })
+        .map(function(k){ return pairs[k]; })
+        .filter(function(p){ return p.book || p.gdz; });
+
+      if (items.length) books[name] = { items: items };
+      else delete books[name];
+
       booksEditing = null;
       saveConfig("books");
       renderBooks();
