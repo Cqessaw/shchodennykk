@@ -297,8 +297,10 @@
   .hw-note{
     margin-top:9px;border-radius:11px;padding:10px 11px;
     background:var(--panel-2);border:1px solid var(--line);
-    display:flex;gap:10px;align-items:flex-start;
+    display:flex;flex-direction:column;gap:8px;
   }
+  .hw-main{display:flex;gap:10px;align-items:flex-start;}
+  .hw-meta{display:flex;align-items:center;gap:8px;}
   .hw-note.done{background:var(--green-soft);border-color:transparent;}
   .hw-check{
     appearance:none;-webkit-appearance:none;width:18px;height:18px;flex:none;margin:1px 0 0;
@@ -307,11 +309,10 @@
   }
   .hw-check:checked{background:var(--green);border-color:var(--green);}
   .hw-check:checked::after{content:"✓";color:var(--panel);font-size:12px;line-height:1;font-weight:700;}
-  .hw-body{flex:1;min-width:0;}
-  .hw-text{font-size:13.5px;line-height:1.45;white-space:pre-wrap;word-break:break-word;}
+  .hw-text{flex:1;min-width:0;font-size:13.5px;line-height:1.45;white-space:pre-wrap;word-break:break-word;}
   .hw-note.done .hw-text{color:var(--text-faint);text-decoration:line-through;}
   .hw-due{
-    display:inline-block;margin-top:6px;font-family:"JetBrains Mono",monospace;
+    display:inline-block;font-family:"JetBrains Mono",monospace;
     font-size:11px;font-weight:600;padding:3px 8px;border-radius:999px;
     background:var(--panel);border:1px solid var(--line);color:var(--text-soft);
   }
@@ -319,7 +320,7 @@
   .hw-due.now{background:var(--accent-soft);color:var(--accent);border-color:transparent;}
   .hw-due.soon{background:var(--amber-soft);color:var(--amber);border-color:transparent;}
   .hw-note.done .hw-due{background:transparent;color:var(--text-faint);border-color:var(--line);}
-  .hw-actions{display:flex;gap:2px;flex:none;}
+  .hw-actions{display:flex;gap:2px;flex:none;margin-left:auto;}
   .icon-btn{
     border:none;background:transparent;color:var(--text-faint);cursor:pointer;
     width:26px;height:26px;border-radius:7px;font-size:13px;line-height:1;
@@ -918,14 +919,16 @@
       }
       body =
         '<div class="hw-note' + (hw.done ? ' done' : '') + '">' +
-          '<input class="hw-check" type="checkbox" ' + (hw.done ? "checked" : "") + ' data-act="toggle" data-id="' + id + '" aria-label="Виконано">' +
-          '<div class="hw-body">' +
+          '<div class="hw-main">' +
+            '<input class="hw-check" type="checkbox" ' + (hw.done ? "checked" : "") + ' data-act="toggle" data-id="' + id + '" aria-label="Виконано">' +
             '<div class="hw-text">' + escapeHtml(hw.text) + '</div>' +
-            dueHtml +
           '</div>' +
-          '<div class="hw-actions">' +
-            '<button class="icon-btn" type="button" data-act="edit" data-id="' + id + '" aria-label="Редагувати">✎</button>' +
-            '<button class="icon-btn" type="button" data-act="delete" data-id="' + id + '" aria-label="Видалити">✕</button>' +
+          '<div class="hw-meta">' +
+            dueHtml +
+            '<div class="hw-actions">' +
+              '<button class="icon-btn" type="button" data-act="edit" data-id="' + id + '" aria-label="Редагувати">✎</button>' +
+              '<button class="icon-btn" type="button" data-act="delete" data-id="' + id + '" aria-label="Видалити">✕</button>' +
+            '</div>' +
           '</div>' +
         '</div>';
     } else {
