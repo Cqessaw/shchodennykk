@@ -395,6 +395,27 @@
     padding:6px 12px;border-radius:999px;cursor:pointer;
   }
   .link-btn:hover{color:var(--accent-2);border-color:var(--accent);}
+  .room-name{color:var(--accent-2);font-family:"JetBrains Mono",monospace;}
+  .dot{display:inline-block;width:7px;height:7px;border-radius:50%;vertical-align:middle;}
+  .dot.live{background:var(--moss);box-shadow:0 0 8px var(--moss);}
+  .dot.off{background:var(--alert);}
+
+  .sync-panel{
+    margin:14px auto 0;max-width:560px;
+    background:var(--panel);border:1px solid var(--line-strong);border-radius:14px;
+    padding:16px 18px;box-shadow:var(--shadow);
+  }
+  .sync-title{font-family:"Manrope",sans-serif;font-weight:800;font-size:14px;text-transform:uppercase;letter-spacing:.3px;}
+  .sync-hint{margin:8px 0 12px;color:var(--ink-soft);font-size:12.5px;line-height:1.5;}
+  .sync-form{display:flex;gap:7px;flex-wrap:wrap;}
+  .sync-form input{
+    flex:1;min-width:160px;border-radius:999px;border:1px solid var(--line-strong);
+    background:var(--panel-raised);color:var(--ink);padding:9px 14px;
+    font-family:"JetBrains Mono",monospace;font-size:13px;
+  }
+  .sync-form input:focus{border-color:var(--accent);outline:none;}
+  .sync-warn{margin:11px 0 0;color:var(--ink-faint);font-size:11.5px;line-height:1.5;}
+
   .toast{
     position:fixed;left:50%;bottom:24px;transform:translateX(-50%);
     background:var(--panel-raised);border:1px solid var(--line-strong);
@@ -485,9 +506,24 @@
 
     <div class="foot-row">
       <p class="foot-note" id="storeNote"></p>
+      <button class="link-btn" id="syncBtn" type="button">Спільний режим</button>
       <button class="link-btn" id="exportBtn" type="button">Зберегти копію</button>
       <button class="link-btn" id="importBtn" type="button">Відновити з копії</button>
       <input type="file" id="importFile" accept="application/json,.json" hidden>
+    </div>
+
+    <div class="sync-panel" id="syncPanel" hidden>
+      <div class="sync-title">Спільні домашні завдання</div>
+      <p class="sync-hint">
+        Введіть однаковий код класу на всіх телефонах — домашні завдання будуть
+        оновлюватися в усіх одночасно. Оцінки лишаються приватними, вони нікуди не надсилаються.
+      </p>
+      <div class="sync-form">
+        <input type="text" id="roomInput" placeholder="напр. 9b-2026" autocomplete="off" spellcheck="false">
+        <button class="btn-save" id="roomJoin" type="button">Підключитися</button>
+        <button class="btn-cancel" id="roomClose" type="button">Закрити</button>
+      </div>
+      <p class="sync-warn">Хто знає код — може читати й редагувати ДЗ. Не використовуй код, який легко вгадати.</p>
     </div>
   </section>
 
@@ -624,6 +660,13 @@
   var mobileDay = clampWeekday(new Date().getDay());
   var HW_KEY = "shchodennyk_homework_v1";
   var GRADE_KEY = "shchodennyk_grades_v1";
+  var ROOM_KEY = "shchodennyk_room_v1";
+
+  var roomCode = "";
+  try { roomCode = localStorage.getItem(ROOM_KEY) || ""; } catch(e){}
+  var syncState = "off";       // off | connecting | on | error
+  var firstSnapshot = false;
+  var pendingLocal = null;
 
   // ---------- storage (localStorage only — нічого не йде на сервер) ----------
   function mapOf(kind){ return kind === "hw" ? homework : grades; }
@@ -640,18 +683,106 @@
   function saveDoc(kind, id, data, silent){
     mapOf(kind)[id] = data;
     saveLocal(kind);
+    if (kind === "hw" && roomCode && window.Sync && window.Sync.available){
+      window.Sync.set(roomCode, id, data).catch(function(){ toast("Не вдалося синхронізувати"); });
+    }
     if (!silent) render();
   }
   function removeDoc(kind, id){
     delete mapOf(kind)[id];
     saveLocal(kind);
+    if (kind === "hw" && roomCode && window.Sync && window.Sync.available){
+      window.Sync.remove(roomCode, id).catch(function(){});
+    }
     render();
+  }
+
+  // ---------- спільна кімната ----------
+  function normalizeRoom(s){
+    return String(s).trim().toLowerCase()
+      .replace(/[^a-z0-9а-яіїєґ]+/gi, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 40);
+  }
+
+  function connectRoom(code){
+    if (!window.Sync || !window.Sync.available){ syncState = "error"; renderSync(); return; }
+    roomCode = code;
+    try { localStorage.setItem(ROOM_KEY, code); } catch(e){}
+    pendingLocal = JSON.parse(JSON.stringify(homework));
+    firstSnapshot = true;
+    syncState = "connecting";
+    renderSync();
+
+    window.Sync.connect(code, function(map){
+      homework = map;
+      saveLocal("hw");
+      syncState = "on";
+
+      if (firstSnapshot){
+        firstSnapshot = false;
+        var missing = Object.keys(pendingLocal || {}).filter(function(id){
+          return pendingLocal[id] && pendingLocal[id].text && !map[id];
+        });
+        if (missing.length && confirm("Перенести твої записи (" + missing.length + ") у спільну кімнату?")){
+          missing.forEach(function(id){
+            homework[id] = pendingLocal[id];
+            window.Sync.set(code, id, pendingLocal[id]).catch(function(){});
+          });
+          saveLocal("hw");
+        }
+        pendingLocal = null;
+      }
+      render();
+      renderSync();
+    }, function(){
+      syncState = "error";
+      renderSync();
+      toast("Немає зв'язку з кімнатою");
+    });
+  }
+
+  function leaveRoom(){
+    if (window.Sync && window.Sync.available) window.Sync.disconnect();
+    roomCode = "";
+    try { localStorage.removeItem(ROOM_KEY); } catch(e){}
+    syncState = "off";
+    saveLocal("hw");
+    renderSync();
+    toast("Кімнату відключено, записи лишились на цьому пристрої");
+  }
+
+  function renderSync(){
+    var note = document.getElementById("storeNote");
+    var btn = document.getElementById("syncBtn");
+    if (roomCode && syncState === "on"){
+      note.innerHTML = 'Спільна кімната <b class="room-name">' + escapeHtml(roomCode) + '</b> <span class="dot live"></span> наживо';
+      btn.textContent = "Вийти з кімнати";
+    } else if (roomCode && syncState === "connecting"){
+      note.innerHTML = 'Підключення до кімнати <b class="room-name">' + escapeHtml(roomCode) + '</b>…';
+      btn.textContent = "Вийти з кімнати";
+    } else if (roomCode && syncState === "error"){
+      note.innerHTML = 'Кімната <b class="room-name">' + escapeHtml(roomCode) + '</b> <span class="dot off"></span> немає зв\'язку';
+      btn.textContent = "Вийти з кімнати";
+    } else {
+      note.textContent = "Зберігається у цьому браузері";
+      btn.textContent = "Спільний режим";
+    }
   }
 
   function initStore(){
     loadLocal();
-    document.getElementById("storeNote").textContent = "Зберігається у цьому браузері";
+    renderSync();
     render();
+    if (roomCode) whenSyncReady(function(){ connectRoom(roomCode); });
+  }
+
+  function whenSyncReady(fn){
+    if (window.Sync) { fn(); return; }
+    window.addEventListener("sync-ready", function once(){
+      window.removeEventListener("sync-ready", once);
+      fn();
+    });
   }
 
   // ---------- helpers ----------
@@ -1137,6 +1268,29 @@
     else if (e.key === "ArrowRight") shiftWeek(1);
   });
 
+  document.getElementById("syncBtn").addEventListener("click", function(){
+    if (roomCode){ leaveRoom(); return; }
+    var panel = document.getElementById("syncPanel");
+    panel.hidden = !panel.hidden;
+    if (!panel.hidden) document.getElementById("roomInput").focus();
+  });
+  document.getElementById("roomClose").addEventListener("click", function(){
+    document.getElementById("syncPanel").hidden = true;
+  });
+  document.getElementById("roomJoin").addEventListener("click", function(){
+    var code = normalizeRoom(document.getElementById("roomInput").value);
+    if (!code){ toast("Введи код класу"); return; }
+    if (!window.Sync || !window.Sync.available){
+      toast("Синхронізація недоступна — немає зв'язку");
+      return;
+    }
+    document.getElementById("syncPanel").hidden = true;
+    connectRoom(code);
+  });
+  document.getElementById("roomInput").addEventListener("keydown", function(e){
+    if (e.key === "Enter") document.getElementById("roomJoin").click();
+  });
+
   document.getElementById("exportBtn").addEventListener("click", exportBackup);
   document.getElementById("importBtn").addEventListener("click", function(){
     document.getElementById("importFile").click();
@@ -1168,6 +1322,56 @@ if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0){
   window.addEventListener("load", function(){
     navigator.serviceWorker.register("sw.js").catch(function(){});
   });
+}
+</script>
+
+<script type="module">
+// Налаштування Firebase. Це публічні ідентифікатори проєкту, не паролі —
+// доступ обмежують правила безпеки у Firestore, а не таємність цих рядків.
+const FIREBASE_CONFIG = {
+  apiKey: "__FIREBASE_API_KEY__",
+  authDomain: "__FIREBASE_PROJECT__.firebaseapp.com",
+  projectId: "__FIREBASE_PROJECT__",
+  appId: "__FIREBASE_APP_ID__"
+};
+
+function offline(){
+  window.Sync = { available: false };
+  window.dispatchEvent(new Event("sync-ready"));
+}
+
+if (FIREBASE_CONFIG.projectId.indexOf("__") === 0){
+  offline();
+} else {
+  try {
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js");
+    const {
+      initializeFirestore, persistentLocalCache,
+      collection, doc, setDoc, deleteDoc, onSnapshot
+    } = await import("https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js");
+
+    const app = initializeApp(FIREBASE_CONFIG);
+    const db = initializeFirestore(app, { localCache: persistentLocalCache() });
+    let unsub = null;
+
+    window.Sync = {
+      available: true,
+      connect(room, onData, onError){
+        if (unsub){ unsub(); unsub = null; }
+        unsub = onSnapshot(collection(db, "rooms", room, "homework"), snap => {
+          const map = {};
+          snap.forEach(d => { map[d.id] = d.data(); });
+          onData(map);
+        }, onError);
+      },
+      disconnect(){ if (unsub){ unsub(); unsub = null; } },
+      set(room, id, data){ return setDoc(doc(db, "rooms", room, "homework", id), data); },
+      remove(room, id){ return deleteDoc(doc(db, "rooms", room, "homework", id)); }
+    };
+    window.dispatchEvent(new Event("sync-ready"));
+  } catch (e) {
+    offline();
+  }
 }
 </script>
 </body>

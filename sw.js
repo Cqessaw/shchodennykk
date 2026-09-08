@@ -1,4 +1,4 @@
-var CACHE = "shchodennyk-v1";
+var CACHE = "shchodennyk-v2";
 var SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png"];
 
 self.addEventListener("install", function(e){
@@ -22,7 +22,7 @@ self.addEventListener("fetch", function(e){
   if (req.method !== "GET") return;
   var url = new URL(req.url);
 
-  if (url.hostname === "fonts.googleapis.com" || url.hostname === "fonts.gstatic.com"){
+  if (url.hostname === "fonts.googleapis.com" || url.hostname === "fonts.gstatic.com" || url.hostname === "www.gstatic.com"){
     e.respondWith(caches.open(CACHE).then(function(c){
       return c.match(req).then(function(hit){
         return hit || fetch(req).then(function(res){ c.put(req, res.clone()); return res; });
