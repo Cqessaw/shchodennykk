@@ -460,6 +460,33 @@
   .sem-tab:hover{color:var(--text);border-color:var(--line-strong);}
   .sem-tab.active{background:var(--accent);border-color:var(--accent);color:var(--on-accent);}
   .sem-range{margin:0 0 12px;color:var(--text-soft);font-size:13px;}
+
+  /* ---------- пошук предмета в розкладі ---------- */
+  .sched-top{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:10px;flex-wrap:wrap;margin-bottom:12px;
+  }
+  .sched-top .sem-tabs{margin-bottom:0;}
+  .search-box{display:flex;align-items:center;gap:9px;}
+  .search-input{
+    width:190px;max-width:100%;
+    border:1px solid var(--line);background:var(--panel);color:var(--text);
+    border-radius:999px;padding:8px 14px;font-family:inherit;font-size:16px;
+  }
+  .search-input::placeholder{color:var(--text-faint);font-size:13px;}
+  .search-input:focus{border-color:var(--green);outline:none;box-shadow:0 0 0 3px var(--green-soft);}
+  .search-count{font-size:12px;color:var(--green);font-weight:600;white-space:nowrap;}
+  .search-count.none{color:var(--text-faint);}
+
+  table.schedule th.hit-col{background:var(--green-soft);color:var(--green);}
+  table.schedule td.num.hit-row{color:var(--green);font-weight:700;}
+  table.schedule td.hit,
+  table.schedule tbody tr:hover td.hit{
+    background:var(--green-soft);
+    box-shadow:inset 0 0 0 1px var(--green-line);
+    color:var(--green);font-weight:600;
+  }
+  table.schedule td.hit .sub{color:var(--green);opacity:.8;}
   .note-line{
     background:var(--amber-soft);border:1px solid var(--amber-line);color:var(--text);
     border-radius:12px;padding:11px 14px;font-size:13px;line-height:1.55;margin-bottom:12px;
@@ -640,7 +667,15 @@
   </section>
 
   <section id="schedule-view" hidden>
-    <div class="sem-tabs" id="semTabs"></div>
+    <div class="sched-top">
+      <div class="sem-tabs" id="semTabs"></div>
+      <div class="search-box">
+        <input class="search-input" id="lessonSearch" type="search" inputmode="search"
+               placeholder="Знайти предмет" autocomplete="off" spellcheck="false"
+               aria-label="Знайти предмет у розкладі">
+        <span class="search-count" id="searchCount"></span>
+      </div>
+    </div>
     <p class="sem-range" id="semRange"></p>
     <div id="semNote"></div>
     <div class="schedule-wrap">
@@ -837,6 +872,7 @@
   var semesters = {};
   Object.keys(DEFAULT_SEMESTERS).forEach(function(k){ semesters[k] = DEFAULT_SEMESTERS[k]; });
 
+  var searchQuery = "";             // пошук предмета в розкладі
   var scheduleSem = null;           // який семестр показує вкладка «Розклад»
   var gradesScope = null;           // 1 | 2 | "all" на вкладці «Оцінки»
   var booksEditing = null;          // предмет, для якого відкрита форма посилань
@@ -1352,22 +1388,41 @@
       : '<div class="note-line">Розклад другого семестру ще не заданий — показано розклад першого. ' +
         'Коли школа видасть новий, його треба вписати у код (константа <b>SCHEDULE_2</b>).</div>';
 
+    // Пошук: спершу знаходимо збіги, щоб підсвітити і день, і номер уроку.
+    var q = searchQuery.trim().toLowerCase();
+    var cells = {}, hitCol = {}, hitRow = {}, hits = 0;
+    for (var n = 1; n <= 7; n++){
+      cells[n] = {};
+      for (var day = 1; day <= 5; day++){
+        var item = lessonAtWeekday(sch, day, n);
+        cells[n][day] = item;
+        if (item && q && matchSubject(item, q)){ hitCol[day] = 1; hitRow[n] = 1; hits++; }
+      }
+    }
+
     var head = "<thead><tr><th>Урок</th>";
-    for (var d = 1; d <= 5; d++){ head += "<th>" + DAY_NAMES[d] + "</th>"; }
+    for (var d = 1; d <= 5; d++){
+      head += '<th' + (hitCol[d] ? ' class="hit-col"' : '') + ">" + DAY_NAMES[d] + "</th>";
+    }
     head += "</tr></thead>";
 
     var body = "<tbody>";
-    for (var n = 1; n <= 7; n++){
-      body += '<tr><td class="num">' + n + "</td>";
-      for (var day = 1; day <= 5; day++){
-        var item = lessonAtWeekday(sch, day, n);
-        body += item
-          ? "<td>" + escapeHtml(item.s) + (item.sub ? '<span class="sub">' + escapeHtml(item.sub) + "</span>" : "") + "</td>"
-          : '<td class="dash">—</td>';
+    for (var n2 = 1; n2 <= 7; n2++){
+      body += '<tr><td class="num' + (hitRow[n2] ? " hit-row" : "") + '">' + n2 + "</td>";
+      for (var day2 = 1; day2 <= 5; day2++){
+        var it = cells[n2][day2];
+        if (!it){ body += '<td class="dash">—</td>'; continue; }
+        var isHit = q && matchSubject(it, q);
+        body += '<td' + (isHit ? ' class="hit"' : '') + ">" + escapeHtml(it.s) +
+          (it.sub ? '<span class="sub">' + escapeHtml(it.sub) + "</span>" : "") + "</td>";
       }
       body += "</tr>";
     }
     document.getElementById("scheduleTable").innerHTML = head + body + "</tbody>";
+
+    var countEl = document.getElementById("searchCount");
+    countEl.textContent = !q ? "" : hits ? hits + " " + lessonsWord(hits) + " на тиждень" : "не знайдено";
+    countEl.className = "search-count" + (q && !hits ? " none" : "");
 
     ["s1from","s1to","s2from","s2to"].forEach(function(k){
       var el = document.getElementById("date-" + k);
@@ -1378,6 +1433,9 @@
     var lessons = (sch && sch[weekday]) || [];
     for (var i = 0; i < lessons.length; i++){ if (lessons[i].n === lessonNum) return lessons[i]; }
     return null;
+  }
+  function matchSubject(item, q){
+    return (item.s + " " + (item.sub || "")).toLowerCase().indexOf(q) !== -1;
   }
   function fmtIso(iso){
     var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || "");
@@ -1607,6 +1665,11 @@
     if (w >= 1 && w <= 5) satPlan[iso] = w; else delete satPlan[iso];
     saveConfig("days");
     render();
+  });
+
+  document.getElementById("lessonSearch").addEventListener("input", function(e){
+    searchQuery = e.target.value;
+    renderSchedule();
   });
 
   // семестри
