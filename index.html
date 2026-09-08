@@ -1,0 +1,1174 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Щоденник</title>
+<meta name="theme-color" content="#0B0908">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Щоденник">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap">
+<style>
+  /* Deliberately single dark world — matches the reference direction. */
+  :root{
+    --bg:#0B0908;
+    --panel:#181310;
+    --panel-raised:#211A16;
+    --ink:#F6F1E9;
+    --ink-soft:#B9AEA0;
+    --ink-faint:#786C60;
+    --line:rgba(255,236,220,.10);
+    --line-strong:rgba(255,204,170,.20);
+    --accent:#EA5A2B;
+    --accent-2:#FF8A3D;
+    --accent-strong:#FF7645;
+    --accent-contrast:#1A0D06;
+    --accent-soft:rgba(234,90,43,.14);
+    --moss:#5FBE79;
+    --moss-soft:rgba(95,190,121,.14);
+    --alert:#E4574C;
+    --alert-soft:rgba(228,87,76,.16);
+    --amber:#F0C15F;
+    --amber-soft:rgba(240,193,95,.16);
+    --sky:#7FB0E8;
+    --sky-soft:rgba(127,176,232,.16);
+    --cat-mova:#E88FB0;
+    --cat-exact:#7FB0E8;
+    --cat-nature:#7FD9A0;
+    --cat-social:#F0C15F;
+    --cat-other:#A79C8C;
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 14px 32px -18px rgba(0,0,0,.85);
+    --glow-shadow:0 0 0 1px var(--accent-strong), 0 0 28px -4px rgba(255,120,60,.55);
+  }
+
+  *{box-sizing:border-box;}
+  html{background:var(--bg);}
+  body{
+    margin:0;color:var(--ink);
+    font-family:"Golos Text", "Segoe UI", system-ui, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    background:
+      radial-gradient(60% 42% at 22% 100%, rgba(255,122,61,.30), transparent 70%),
+      radial-gradient(55% 40% at 82% 96%, rgba(210,40,58,.22), transparent 70%),
+      radial-gradient(80% 50% at 50% 130%, rgba(234,90,43,.18), transparent 70%),
+      var(--bg);
+    background-attachment:fixed;
+  }
+  .app{max-width:1180px;margin:0 auto;padding:28px 20px 64px;}
+
+  /* ---------- header ---------- */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:16px;flex-wrap:wrap;
+    padding:10px 14px 10px 10px;margin-bottom:22px;
+    background:rgba(24,19,16,.72);backdrop-filter:blur(6px);
+    border:1px solid var(--line);border-radius:16px;
+  }
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand-mark{
+    width:42px;height:42px;border-radius:11px;
+    background:linear-gradient(155deg, var(--accent-2), var(--accent) 70%);
+    color:var(--accent-contrast);
+    display:flex;align-items:center;justify-content:center;
+    font-family:"Manrope",sans-serif;font-weight:800;font-size:18px;
+    flex:none;box-shadow:0 6px 16px -6px rgba(234,90,43,.7);
+  }
+  .brand h1{
+    font-family:"Manrope",sans-serif;font-weight:800;
+    font-size:20px;letter-spacing:.2px;margin:0;line-height:1.1;
+    text-transform:uppercase;
+  }
+  .brand h1::after{content:"•";color:var(--accent);margin-left:3px;}
+  .brand p{margin:2px 0 0;color:var(--ink-soft);font-size:12.5px;}
+
+  .tabs{display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px;}
+  .tab{
+    border:none;background:transparent;color:var(--ink-soft);
+    font-family:"Golos Text",sans-serif;font-weight:700;font-size:13px;
+    padding:9px 16px;border-radius:999px;cursor:pointer;
+  }
+  .tab.active{background:linear-gradient(135deg, var(--accent-2), var(--accent));color:var(--accent-contrast);}
+  .tab:focus-visible,button:focus-visible,textarea:focus-visible,input:focus-visible,label:focus-visible{
+    outline:2px solid var(--accent-strong);outline-offset:2px;
+  }
+
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:7px;
+    border:1px solid var(--line-strong);border-radius:999px;
+    padding:5px 11px;font-family:"Manrope",sans-serif;font-weight:800;
+    font-size:10.5px;letter-spacing:.9px;text-transform:uppercase;color:var(--ink-soft);
+  }
+  .eyebrow b{color:var(--accent-2);font-family:"JetBrains Mono",monospace;font-size:11px;}
+
+  /* ---------- hero: what's due next ---------- */
+  .hero{
+    display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center;
+    background:
+      radial-gradient(80% 120% at 92% 50%, rgba(234,90,43,.16), transparent 62%),
+      var(--panel);
+    border:1px solid var(--line);border-radius:16px;
+    padding:16px 18px;margin-bottom:18px;box-shadow:var(--shadow);
+  }
+  .due-list{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:7px;}
+  .due-item{
+    display:flex;align-items:baseline;gap:10px;width:100%;text-align:left;
+    background:var(--panel-raised);border:1px solid var(--line);
+    border-radius:10px;padding:8px 11px;cursor:pointer;color:var(--ink);
+    font-family:"Golos Text",sans-serif;
+  }
+  .due-item:hover{border-color:var(--line-strong);}
+  .due-when{
+    flex:none;font-family:"JetBrains Mono",monospace;font-size:10.5px;font-weight:700;
+    padding:3px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:.2px;
+  }
+  .due-when.late{background:var(--alert-soft);color:var(--alert);}
+  .due-when.now{background:var(--accent-soft);color:var(--accent-2);}
+  .due-when.soon{background:var(--amber-soft);color:var(--amber);}
+  .due-when.later{background:rgba(255,236,220,.07);color:var(--ink-soft);}
+  .due-subject{font-weight:700;font-size:12.5px;flex:none;}
+  .due-text{
+    color:var(--ink-soft);font-size:12px;flex:1;min-width:0;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .due-more{color:var(--ink-faint);font-size:11.5px;padding-left:2px;}
+  .hero-empty{margin:12px 0 0;color:var(--ink-soft);font-size:13px;}
+  .hero-empty b{color:var(--moss);font-weight:700;}
+
+  .hero-side{display:flex;flex-direction:column;align-items:center;gap:6px;flex:none;}
+  .ring-wrap{position:relative;width:92px;height:92px;}
+  .ring{width:92px;height:92px;transform:rotate(-90deg);}
+  .ring-track{fill:none;stroke:rgba(255,236,220,.10);stroke-width:8;}
+  .ring-bar{fill:none;stroke:url(#ringGrad);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .5s ease;}
+  .ring-stop-a{stop-color:var(--accent-2);}
+  .ring-stop-b{stop-color:var(--accent);}
+  .ring-value{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-family:"JetBrains Mono",monospace;font-weight:700;font-size:16px;
+    font-variant-numeric:tabular-nums;
+  }
+  .ring-label{
+    font-size:10.5px;color:var(--ink-faint);text-align:center;line-height:1.3;
+    text-transform:uppercase;letter-spacing:.5px;font-weight:700;
+  }
+
+  /* ---------- week nav ---------- */
+  .week-toolbar{
+    display:flex;align-items:center;justify-content:space-between;
+    flex-wrap:wrap;gap:10px;margin-bottom:14px;
+  }
+  .week-nav{display:flex;align-items:center;gap:10px;}
+  .nav-btn{
+    width:34px;height:34px;border-radius:999px;border:1px solid var(--line-strong);
+    background:var(--panel);color:var(--ink);font-size:16px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .nav-btn:hover{border-color:var(--accent);color:var(--accent-2);}
+  .week-label{
+    font-family:"Manrope",sans-serif;font-weight:800;font-size:14.5px;
+    min-width:170px;text-align:center;
+  }
+  .today-btn{
+    border:1px solid var(--line-strong);background:var(--panel);color:var(--ink-soft);
+    font-family:"Golos Text",sans-serif;font-weight:700;font-size:12px;
+    padding:8px 14px;border-radius:999px;cursor:pointer;
+  }
+  .today-btn:hover{color:var(--accent-2);border-color:var(--accent);}
+  .week-stats{
+    font-family:"JetBrains Mono",monospace;font-variant-numeric:tabular-nums;
+    font-size:12.5px;color:var(--ink-soft);
+    background:var(--panel);border:1px solid var(--line);
+    padding:8px 14px;border-radius:999px;
+  }
+  .week-stats b{color:var(--accent-2);}
+
+  /* ---------- week grid ---------- */
+  .week-scroll{overflow-x:auto;padding-bottom:6px;}
+  .week-grid{
+    display:grid;grid-template-columns:repeat(5,minmax(216px,1fr));gap:14px;
+  }
+  .day-col{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;
+  }
+  .day-col.is-today{border-color:transparent;box-shadow:var(--glow-shadow), var(--shadow);}
+  .day-head{
+    padding:13px 14px;border-bottom:1px solid var(--line);
+    background:var(--panel-raised);
+    display:flex;align-items:flex-start;justify-content:space-between;gap:8px;
+  }
+  .day-col.is-today .day-head{background:linear-gradient(135deg, rgba(255,138,61,.20), rgba(210,40,58,.14));}
+  .day-name{font-family:"Manrope",sans-serif;font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.3px;}
+  .day-col.is-today .day-name{color:var(--accent-2);}
+  .day-date{font-family:"JetBrains Mono",monospace;font-size:11.5px;color:var(--ink-soft);margin-top:3px;font-variant-numeric:tabular-nums;}
+  .day-badge{
+    flex:none;font-family:"JetBrains Mono",monospace;font-size:10.5px;font-weight:700;
+    padding:4px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent-2);
+    font-variant-numeric:tabular-nums;
+  }
+  .day-badge.all-done{background:var(--moss-soft);color:var(--moss);}
+
+  .lesson-list{display:flex;flex-direction:column;}
+  .lesson-row{
+    display:grid;grid-template-columns:26px 1fr;gap:10px;
+    padding:11px 14px;border-bottom:1px solid var(--line);
+    position:relative;
+  }
+  .lesson-row:last-child{border-bottom:none;}
+  .lesson-row::before{
+    content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+    background:var(--cat);
+  }
+  .lesson-row.flash{box-shadow:inset 0 0 0 2px var(--accent-strong);}
+  @media (prefers-reduced-motion: no-preference){
+    .lesson-row.flash{animation:flashPulse 1.4s ease;}
+    @keyframes flashPulse{
+      0%{box-shadow:inset 0 0 0 2px var(--accent-strong);background:var(--accent-soft);}
+      100%{box-shadow:inset 0 0 0 2px rgba(255,118,69,0);background:transparent;}
+    }
+  }
+  .lesson-num{
+    font-family:"JetBrains Mono",monospace;font-weight:700;font-size:12px;
+    color:var(--ink-faint);padding-top:2px;
+  }
+  .subject-line{display:flex;align-items:flex-start;gap:8px;}
+  .lesson-subject{font-weight:700;font-size:13.5px;line-height:1.3;color:var(--ink);flex:1;min-width:0;}
+  .lesson-sub{font-size:11px;color:var(--ink-soft);font-weight:500;}
+
+  .grade-chip{
+    flex:none;min-width:26px;height:26px;padding:0 6px;border-radius:8px;cursor:pointer;
+    font-family:"JetBrains Mono",monospace;font-weight:700;font-size:12.5px;
+    display:flex;align-items:center;justify-content:center;border:1px solid transparent;
+  }
+  .grade-chip.empty{background:transparent;border:1px dashed var(--line-strong);color:var(--ink-faint);font-weight:600;}
+  .grade-chip.empty:hover{border-color:var(--accent);color:var(--accent-2);}
+  .g-high{background:var(--moss-soft);color:var(--moss);}
+  .g-good{background:var(--sky-soft);color:var(--sky);}
+  .g-mid{background:var(--amber-soft);color:var(--amber);}
+  .g-low{background:var(--alert-soft);color:var(--alert);}
+
+  .grade-picker{
+    margin-top:8px;background:var(--panel-raised);border:1px solid var(--line-strong);
+    border-radius:10px;padding:9px;
+  }
+  .gp-title{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-faint);font-weight:700;margin-bottom:7px;}
+  .gp-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;}
+  .gp-num{
+    border:none;border-radius:7px;padding:7px 0;cursor:pointer;
+    font-family:"JetBrains Mono",monospace;font-weight:700;font-size:12.5px;
+  }
+  .gp-num:hover{filter:brightness(1.35);}
+  .gp-clear{
+    margin-top:7px;width:100%;border:1px solid var(--line-strong);background:transparent;
+    color:var(--ink-soft);border-radius:999px;padding:6px;cursor:pointer;
+    font-family:"Golos Text",sans-serif;font-weight:700;font-size:11.5px;
+  }
+  .gp-clear:hover{color:var(--alert);border-color:var(--alert);}
+
+  .hw-add{
+    margin-top:8px;border:1px dashed var(--line-strong);background:transparent;
+    color:var(--ink-faint);font-family:"Golos Text",sans-serif;font-size:12px;font-weight:700;
+    padding:7px 10px;border-radius:8px;cursor:pointer;width:100%;text-align:left;
+  }
+  .hw-add:hover{border-color:var(--accent);color:var(--accent-2);border-style:solid;background:var(--accent-soft);}
+
+  .hw-note{
+    margin-top:8px;border-radius:9px;padding:9px 10px;
+    background:var(--panel-raised);border:1px solid var(--line);
+    display:flex;gap:8px;align-items:flex-start;
+  }
+  .hw-note.done{background:var(--moss-soft);border-color:transparent;}
+  .hw-check{
+    appearance:none;-webkit-appearance:none;width:16px;height:16px;flex:none;margin-top:1px;
+    border:1.5px solid var(--line-strong);border-radius:5px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;background:var(--panel);
+  }
+  .hw-check:checked{background:var(--moss);border-color:var(--moss);}
+  .hw-check:checked::after{content:"✓";color:#0B0908;font-size:11px;line-height:1;font-weight:700;}
+  .hw-body{flex:1;min-width:0;}
+  .hw-text{
+    font-size:12.5px;line-height:1.4;white-space:pre-wrap;word-break:break-word;
+    padding-top:1px;color:var(--ink);
+  }
+  .hw-note.done .hw-text{color:var(--ink-faint);text-decoration:line-through;}
+  .hw-due{
+    display:inline-block;margin-top:5px;font-family:"JetBrains Mono",monospace;
+    font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:999px;
+    background:rgba(255,236,220,.07);color:var(--ink-soft);
+  }
+  .hw-due.late{background:var(--alert-soft);color:var(--alert);}
+  .hw-due.now{background:var(--accent-soft);color:var(--accent-2);}
+  .hw-due.soon{background:var(--amber-soft);color:var(--amber);}
+  .hw-note.done .hw-due{background:rgba(255,236,220,.06);color:var(--ink-faint);}
+  .hw-actions{display:flex;gap:4px;flex:none;}
+  .icon-btn{
+    border:none;background:transparent;color:var(--ink-faint);cursor:pointer;
+    width:20px;height:20px;border-radius:5px;font-size:12px;line-height:1;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .icon-btn:hover{background:var(--line-strong);color:var(--ink);}
+
+  .hw-edit{margin-top:8px;}
+  .hw-edit textarea{
+    width:100%;min-height:56px;resize:vertical;border-radius:9px;
+    border:1px solid var(--accent);background:var(--panel-raised);color:var(--ink);
+    font-family:"Golos Text",sans-serif;font-size:12.5px;padding:8px 9px;line-height:1.4;
+  }
+  .hw-edit-actions{display:flex;gap:6px;margin-top:6px;}
+  .btn-save,.btn-cancel{
+    font-family:"Golos Text",sans-serif;font-weight:700;font-size:11.5px;
+    border-radius:999px;padding:6px 13px;cursor:pointer;border:1px solid transparent;
+  }
+  .btn-save{background:linear-gradient(135deg, var(--accent-2), var(--accent));color:var(--accent-contrast);}
+  .btn-cancel{background:transparent;color:var(--ink-soft);border-color:var(--line-strong);}
+
+  /* ---------- schedule table ---------- */
+  .schedule-wrap{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);}
+  table.schedule{width:100%;border-collapse:collapse;min-width:720px;}
+  table.schedule th, table.schedule td{
+    padding:12px 14px;text-align:left;border-bottom:1px solid var(--line);font-size:13px;
+  }
+  table.schedule thead th{
+    font-family:"Manrope",sans-serif;font-weight:800;font-size:11.5px;
+    text-transform:uppercase;letter-spacing:.3px;
+    background:linear-gradient(135deg, var(--accent-2), var(--accent));color:var(--accent-contrast);
+  }
+  table.schedule thead th:first-child{border-top-left-radius:14px;}
+  table.schedule thead th:last-child{border-top-right-radius:14px;}
+  table.schedule tbody tr:hover td{background:var(--panel-raised);}
+  table.schedule td.num{font-family:"JetBrains Mono",monospace;color:var(--ink-faint);font-weight:700;}
+  table.schedule td .sub{display:block;font-size:11px;color:var(--ink-soft);margin-top:1px;}
+  table.schedule td.dash{color:var(--ink-faint);}
+  table.schedule tbody tr:last-child td{border-bottom:none;}
+
+  /* ---------- grades view ---------- */
+  .grades-summary{
+    display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+    background:
+      radial-gradient(70% 130% at 8% 50%, rgba(234,90,43,.16), transparent 60%),
+      var(--panel);
+    border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:16px;
+    box-shadow:var(--shadow);
+  }
+  .avg-big{
+    font-family:"JetBrains Mono",monospace;font-weight:700;font-size:42px;line-height:1;
+    font-variant-numeric:tabular-nums;
+  }
+  .avg-meta{color:var(--ink-soft);font-size:13px;}
+  .avg-meta b{color:var(--ink);font-weight:700;}
+  .subj-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;}
+  .subj-row{
+    background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:14px 15px;
+    box-shadow:var(--shadow);
+  }
+  .subj-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
+  .subj-name{font-weight:700;font-size:13.5px;}
+  .subj-avg{font-family:"JetBrains Mono",monospace;font-weight:700;font-size:15px;padding:2px 9px;border-radius:8px;}
+  .subj-bar{height:5px;border-radius:999px;background:rgba(255,236,220,.09);margin:10px 0 11px;overflow:hidden;}
+  .subj-bar span{display:block;height:100%;border-radius:999px;}
+  .bar-high{background:var(--moss);} .bar-good{background:var(--sky);}
+  .bar-mid{background:var(--amber);} .bar-low{background:var(--alert);}
+  .subj-marks{display:flex;flex-wrap:wrap;gap:5px;}
+  .mark-chip{
+    font-family:"JetBrains Mono",monospace;font-weight:700;font-size:11.5px;
+    padding:3px 8px;border-radius:7px;
+  }
+  .empty-state{
+    background:var(--panel);border:1px dashed var(--line-strong);border-radius:14px;
+    padding:28px 20px;text-align:center;color:var(--ink-soft);font-size:13.5px;line-height:1.6;
+  }
+  .empty-state b{color:var(--ink);font-weight:700;}
+
+  /* ---------- footer / toast ---------- */
+  .foot-row{
+    margin-top:18px;display:flex;align-items:center;justify-content:center;
+    gap:8px 16px;flex-wrap:wrap;
+  }
+  .foot-note{font-size:12px;color:var(--ink-faint);margin:0;}
+  .link-btn{
+    background:transparent;border:1px solid var(--line);color:var(--ink-soft);
+    font-family:"Golos Text",sans-serif;font-weight:700;font-size:11.5px;
+    padding:6px 12px;border-radius:999px;cursor:pointer;
+  }
+  .link-btn:hover{color:var(--accent-2);border-color:var(--accent);}
+  .toast{
+    position:fixed;left:50%;bottom:24px;transform:translateX(-50%);
+    background:var(--panel-raised);border:1px solid var(--line-strong);
+    color:var(--ink);padding:10px 18px;border-radius:999px;font-size:12.5px;font-weight:600;
+    box-shadow:var(--shadow);z-index:50;
+  }
+
+  [hidden]{display:none!important;}
+
+  /* ---------- mobile day switcher ---------- */
+  .day-tabs{display:none;gap:6px;margin-bottom:12px;}
+  .day-tab{
+    flex:1;min-width:0;border:1px solid var(--line-strong);background:var(--panel);
+    color:var(--ink-soft);border-radius:12px;padding:8px 2px;text-align:center;cursor:pointer;
+    font-family:"Golos Text",sans-serif;position:relative;
+  }
+  .day-tab .dt-name{display:block;font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:.3px;}
+  .day-tab .dt-date{display:block;font-family:"JetBrains Mono",monospace;font-size:10.5px;margin-top:2px;color:var(--ink-faint);}
+  .day-tab .dt-dot{
+    position:absolute;top:5px;right:6px;width:6px;height:6px;border-radius:50%;
+    background:var(--accent-2);
+  }
+  .day-tab.has-today{box-shadow:0 0 0 1.5px var(--accent-strong) inset;}
+  .day-tab.active{background:linear-gradient(135deg, var(--accent-2), var(--accent));border-color:transparent;color:var(--accent-contrast);}
+  .day-tab.active .dt-date{color:var(--accent-contrast);opacity:.85;}
+  .day-tab.active .dt-dot{background:var(--accent-contrast);}
+
+  @media (max-width:720px){
+    .app{padding:16px 10px 48px;}
+    .topbar{align-items:center;}
+    .brand h1{font-size:17px;}
+    .hero{grid-template-columns:1fr;padding:14px 15px;}
+    .hero-side{flex-direction:row;align-items:center;justify-content:flex-start;gap:12px;}
+    .ring-wrap,.ring{width:74px;height:74px;}
+    .ring-label{text-align:left;}
+    .week-toolbar{flex-direction:column;align-items:stretch;}
+    .week-nav{justify-content:center;}
+    .week-stats{text-align:center;}
+    .day-tabs{display:flex;}
+    .week-scroll{overflow-x:visible;}
+    .week-grid{display:block;}
+    .day-col{display:none;}
+    .day-col.mobile-active{display:flex;}
+    .lesson-row{padding:13px 14px;}
+    .nav-btn{width:40px;height:40px;font-size:18px;}
+    .hw-check{width:20px;height:20px;}
+    .icon-btn{width:26px;height:26px;font-size:13px;}
+    .grade-chip{min-width:30px;height:30px;}
+    .avg-big{font-size:34px;}
+    .subj-list{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">Щ</span>
+      <div class="brand-text">
+        <h1>Щоденник</h1>
+        <p>розклад · домашні завдання · оцінки</p>
+      </div>
+    </div>
+    <nav class="tabs">
+      <button class="tab active" data-tab="diary" type="button">Щоденник</button>
+      <button class="tab" data-tab="grades" type="button">Оцінки</button>
+      <button class="tab" data-tab="schedule" type="button">Розклад</button>
+    </nav>
+  </header>
+
+  <section id="diary-view">
+    <div class="hero" id="hero"></div>
+
+    <div class="week-toolbar">
+      <div class="week-nav">
+        <button class="nav-btn" id="prevWeek" type="button" aria-label="Попередній тиждень">‹</button>
+        <div class="week-label" id="weekLabel"></div>
+        <button class="nav-btn" id="nextWeek" type="button" aria-label="Наступний тиждень">›</button>
+        <button class="today-btn" id="todayBtn" type="button">Сьогодні</button>
+      </div>
+      <div class="week-stats" id="weekStats"></div>
+    </div>
+
+    <div class="day-tabs" id="dayTabs"></div>
+    <div class="week-scroll">
+      <div class="week-grid" id="weekGrid"></div>
+    </div>
+
+    <div class="foot-row">
+      <p class="foot-note" id="storeNote"></p>
+      <button class="link-btn" id="exportBtn" type="button">Зберегти копію</button>
+      <button class="link-btn" id="importBtn" type="button">Відновити з копії</button>
+      <input type="file" id="importFile" accept="application/json,.json" hidden>
+    </div>
+  </section>
+
+  <section id="grades-view" hidden>
+    <div id="gradesBody"></div>
+  </section>
+
+  <section id="schedule-view" hidden>
+    <div class="schedule-wrap">
+      <table class="schedule" id="scheduleTable"></table>
+    </div>
+  </section>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var DAY_NAMES = ["", "Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця"];
+  var DAY_SHORT = ["", "Пн", "Вт", "Ср", "Чт", "Пт"];
+  var MONTHS_GEN = ["січня","лютого","березня","квітня","травня","червня","липня","серпня","вересня","жовтня","листопада","грудня"];
+
+  var SCHEDULE = {
+    1: [
+      {n:1, s:"Українська література"},
+      {n:2, s:"Математика", sub:"Алгебра"},
+      {n:3, s:"Українська мова"},
+      {n:4, s:"Англійська мова"},
+      {n:5, s:"Фізика"},
+      {n:6, s:"Зарубіжна література"}
+    ],
+    2: [
+      {n:1, s:"Біологія"},
+      {n:2, s:"Математика", sub:"Геометрія"},
+      {n:3, s:"Фізика"},
+      {n:4, s:"Фізична культура"},
+      {n:5, s:"Українська література"},
+      {n:6, s:"Географія"},
+      {n:7, s:"Історія"}
+    ],
+    3: [
+      {n:1, s:"Інформатика"},
+      {n:2, s:"Історія"},
+      {n:3, s:"Українська мова"},
+      {n:4, s:"Математика", sub:"Алгебра"},
+      {n:5, s:"Хімія"},
+      {n:6, s:"Фізична культура"}
+    ],
+    4: [
+      {n:1, s:"Біологія"},
+      {n:2, s:"Математика", sub:"Геометрія"},
+      {n:3, s:"Українська мова"},
+      {n:4, s:"Англійська мова"},
+      {n:5, s:"Хімія"},
+      {n:6, s:"Заруб. літ. / Трудове навчання"},
+      {n:7, s:"Історія / Трудове навчання"}
+    ],
+    5: [
+      {n:1, s:"Українська мова"},
+      {n:2, s:"Українська література"},
+      {n:3, s:"Фізика"},
+      {n:4, s:"Інформатика"},
+      {n:5, s:"Астрономія"},
+      {n:6, s:"Фізична культура"}
+    ]
+  };
+
+  function categoryOf(subject){
+    var p = subject.split(" / ")[0];
+    if (/Історія/.test(p)) return "social";
+    if (/Математика|Інформатика/.test(p)) return "exact";
+    if (/Біологія|Фізика|Хімія|Астрономія|Географія/.test(p)) return "nature";
+    if (/Українська|Заруб|Англійська/.test(p)) return "mova";
+    return "other";
+  }
+  function subjectKey(item){ return item.sub ? item.s + " · " + item.sub : item.s; }
+
+  // ---------- dates ----------
+  function pad2(n){ return n < 10 ? "0"+n : ""+n; }
+  function isoDate(d){ return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate()); }
+  function startOfDay(d){ var x = new Date(d); x.setHours(0,0,0,0); return x; }
+  function mondayOf(date){
+    var d = startOfDay(date);
+    var day = d.getDay();
+    d.setDate(d.getDate() + (day === 0 ? -6 : 1 - day));
+    return d;
+  }
+  function addDays(date, n){ var d = new Date(date); d.setDate(d.getDate()+n); return d; }
+  function sameDate(a,b){ return isoDate(a) === isoDate(b); }
+  function fmtShort(d){ return d.getDate()+" "+MONTHS_GEN[d.getMonth()]; }
+  function daysBetween(a,b){ return Math.round((startOfDay(b) - startOfDay(a)) / 86400000); }
+  function docId(dateIso, lessonNum){ return dateIso + "-" + lessonNum; }
+  function parseId(id){
+    var m = /^(\d{4})-(\d{2})-(\d{2})-(\d{1,2})$/.exec(id);
+    if (!m) return null;
+    return { date: new Date(+m[1], +m[2]-1, +m[3]), lessonNum: +m[4] };
+  }
+  function lessonAt(date, lessonNum){
+    var lessons = SCHEDULE[date.getDay()] || [];
+    for (var i = 0; i < lessons.length; i++){ if (lessons[i].n === lessonNum) return lessons[i]; }
+    return null;
+  }
+  function nextLessonOf(item, fromDate){
+    var key = subjectKey(item);
+    for (var offset = 1; offset <= 14; offset++){
+      var d = addDays(fromDate, offset);
+      var lessons = SCHEDULE[d.getDay()] || [];
+      for (var i = 0; i < lessons.length; i++){
+        if (subjectKey(lessons[i]) === key) return d;
+      }
+    }
+    return null;
+  }
+  function dueLabel(dueDate){
+    var diff = daysBetween(new Date(), dueDate);
+    if (diff < 0) return { text: "прострочено", cls: "late" };
+    if (diff === 0) return { text: "сьогодні", cls: "now" };
+    if (diff === 1) return { text: "завтра", cls: "soon" };
+    if (diff <= 6) return { text: "до " + DAY_SHORT[dueDate.getDay()], cls: "later" };
+    return { text: "до " + fmtShort(dueDate), cls: "later" };
+  }
+  function gradeBand(v){ return v >= 10 ? "high" : v >= 7 ? "good" : v >= 4 ? "mid" : "low"; }
+  function clampWeekday(day){ return (day >= 1 && day <= 5) ? day : 1; }
+
+  // ---------- state ----------
+  var weekStart = mondayOf(new Date());
+  var homework = {};    // id -> {date, lessonNum, text, done}
+  var grades = {};      // id -> {date, lessonNum, subject, value}
+  var editingId = null;
+  var gradeEditingId = null;
+  var flashId = null;
+  var mobileDay = clampWeekday(new Date().getDay());
+  var HW_KEY = "shchodennyk_homework_v1";
+  var GRADE_KEY = "shchodennyk_grades_v1";
+
+  // ---------- storage (localStorage only — нічого не йде на сервер) ----------
+  function mapOf(kind){ return kind === "hw" ? homework : grades; }
+  function keyOf(kind){ return kind === "hw" ? HW_KEY : GRADE_KEY; }
+
+  function loadLocal(){
+    try { homework = JSON.parse(localStorage.getItem(HW_KEY) || "{}") || {}; } catch(e){ homework = {}; }
+    try { grades = JSON.parse(localStorage.getItem(GRADE_KEY) || "{}") || {}; } catch(e){ grades = {}; }
+  }
+  function saveLocal(kind){
+    try { localStorage.setItem(keyOf(kind), JSON.stringify(mapOf(kind))); } catch(e){}
+  }
+
+  function saveDoc(kind, id, data, silent){
+    mapOf(kind)[id] = data;
+    saveLocal(kind);
+    if (!silent) render();
+  }
+  function removeDoc(kind, id){
+    delete mapOf(kind)[id];
+    saveLocal(kind);
+    render();
+  }
+
+  function initStore(){
+    loadLocal();
+    document.getElementById("storeNote").textContent = "Зберігається у цьому браузері";
+    render();
+  }
+
+  // ---------- helpers ----------
+  function escapeHtml(str){
+    return String(str)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  var toastTimer;
+  function toast(msg){
+    var el = document.getElementById("toast");
+    el.textContent = msg;
+    el.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ el.hidden = true; }, 2800);
+  }
+
+  // ---------- hero: upcoming homework ----------
+  function collectDue(){
+    var out = [];
+    for (var id in homework){
+      var hw = homework[id];
+      if (!hw || !hw.text || hw.done) continue;
+      var info = parseId(id);
+      if (!info) continue;
+      var item = lessonAt(info.date, info.lessonNum);
+      if (!item) continue;
+      var due = nextLessonOf(item, info.date);
+      if (!due) continue;
+      out.push({ id: id, subject: subjectKey(item), text: hw.text, due: due });
+    }
+    out.sort(function(a, b){ return a.due - b.due; });
+    return out;
+  }
+
+  function renderHero(){
+    var due = collectDue();
+    var weekNums = weekProgress();
+    var pct = weekNums.total ? weekNums.done / weekNums.total : 0;
+    var circ = 2 * Math.PI * 38;
+
+    var listHtml;
+    if (due.length === 0){
+      listHtml = '<p class="hero-empty"><b>Все чисто.</b> Невиконаних завдань немає — можна відпочивати.</p>';
+    } else {
+      listHtml = '<ul class="due-list">';
+      due.slice(0, 4).forEach(function(d){
+        var lab = dueLabel(d.due);
+        listHtml +=
+          '<li><button class="due-item" type="button" data-goto="' + d.id + '">' +
+            '<span class="due-when ' + lab.cls + '">' + lab.text + '</span>' +
+            '<span class="due-subject">' + escapeHtml(d.subject) + '</span>' +
+            '<span class="due-text">' + escapeHtml(d.text) + '</span>' +
+          '</button></li>';
+      });
+      if (due.length > 4){
+        listHtml += '<li class="due-more">і ще ' + (due.length - 4) + '…</li>';
+      }
+      listHtml += '</ul>';
+    }
+
+    document.getElementById("hero").innerHTML =
+      '<div class="hero-main">' +
+        '<span class="eyebrow">Найближче' + (due.length ? ' <b>' + due.length + '</b>' : '') + '</span>' +
+        listHtml +
+      '</div>' +
+      '<div class="hero-side">' +
+        '<div class="ring-wrap">' +
+          '<svg class="ring" viewBox="0 0 92 92" aria-hidden="true">' +
+            '<defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">' +
+              '<stop class="ring-stop-a" offset="0"></stop>' +
+              '<stop class="ring-stop-b" offset="1"></stop>' +
+            '</linearGradient></defs>' +
+            '<circle class="ring-track" cx="46" cy="46" r="38"></circle>' +
+            '<circle class="ring-bar" cx="46" cy="46" r="38" ' +
+              'stroke-dasharray="' + circ.toFixed(1) + '" ' +
+              'stroke-dashoffset="' + (circ * (1 - pct)).toFixed(1) + '"></circle>' +
+          '</svg>' +
+          '<div class="ring-value">' + weekNums.done + '/' + weekNums.total + '</div>' +
+        '</div>' +
+        '<div class="ring-label">виконано<br>цього тижня</div>' +
+      '</div>';
+  }
+
+  function weekProgress(){
+    var total = 0, done = 0;
+    for (var i = 0; i < 5; i++){
+      var dateIso = isoDate(addDays(weekStart, i));
+      (SCHEDULE[i + 1] || []).forEach(function(item){
+        var hw = homework[docId(dateIso, item.n)];
+        if (hw && hw.text){ total++; if (hw.done) done++; }
+      });
+    }
+    return { total: total, done: done };
+  }
+
+  // ---------- week grid ----------
+  function lessonRowHtml(dateIso, item){
+    var id = docId(dateIso, item.n);
+    var hw = homework[id];
+    var grade = grades[id];
+    var body = "";
+
+    if (editingId === id){
+      var draft = hw && hw.text ? hw.text : "";
+      body =
+        '<div class="hw-edit">' +
+          '<textarea id="hwta" placeholder="Що задали?">' + escapeHtml(draft) + '</textarea>' +
+          '<div class="hw-edit-actions">' +
+            '<button class="btn-save" type="button" data-act="save" data-id="' + id + '">Зберегти</button>' +
+            '<button class="btn-cancel" type="button" data-act="cancel">Скасувати</button>' +
+          '</div>' +
+        '</div>';
+    } else if (hw && hw.text){
+      var dueDate = nextLessonOf(item, parseId(id).date);
+      var dueHtml = "";
+      if (dueDate){
+        var lab = dueLabel(dueDate);
+        dueHtml = '<span class="hw-due ' + (hw.done ? "" : lab.cls) + '">здати ' + lab.text + '</span>';
+      }
+      body =
+        '<div class="hw-note' + (hw.done ? ' done' : '') + '">' +
+          '<input class="hw-check" type="checkbox" ' + (hw.done ? "checked" : "") + ' data-act="toggle" data-id="' + id + '" aria-label="Виконано">' +
+          '<div class="hw-body">' +
+            '<div class="hw-text">' + escapeHtml(hw.text) + '</div>' +
+            dueHtml +
+          '</div>' +
+          '<div class="hw-actions">' +
+            '<button class="icon-btn" type="button" data-act="edit" data-id="' + id + '" aria-label="Редагувати">✎</button>' +
+            '<button class="icon-btn" type="button" data-act="delete" data-id="' + id + '" aria-label="Видалити">✕</button>' +
+          '</div>' +
+        '</div>';
+    } else {
+      body = '<button class="hw-add" type="button" data-act="add" data-id="' + id + '">+ Додати завдання</button>';
+    }
+
+    if (gradeEditingId === id){
+      var nums = "";
+      for (var v = 1; v <= 12; v++){
+        nums += '<button class="gp-num g-' + gradeBand(v) + '" type="button" data-act="setgrade" data-id="' + id + '" data-val="' + v + '">' + v + '</button>';
+      }
+      body +=
+        '<div class="grade-picker">' +
+          '<div class="gp-title">Оцінка за урок</div>' +
+          '<div class="gp-grid">' + nums + '</div>' +
+          (grade ? '<button class="gp-clear" type="button" data-act="delgrade" data-id="' + id + '">Прибрати оцінку</button>' : '') +
+        '</div>';
+    }
+
+    var gradeBtn = grade && grade.value
+      ? '<button class="grade-chip g-' + gradeBand(grade.value) + '" type="button" data-act="grade" data-id="' + id + '" aria-label="Змінити оцінку">' + grade.value + '</button>'
+      : '<button class="grade-chip empty" type="button" data-act="grade" data-id="' + id + '" aria-label="Поставити оцінку">+</button>';
+
+    return (
+      '<div class="lesson-row" data-row="' + id + '" style="--cat:var(--cat-' + categoryOf(item.s) + ')">' +
+        '<div class="lesson-num">' + item.n + '</div>' +
+        '<div>' +
+          '<div class="subject-line">' +
+            '<div class="lesson-subject">' + escapeHtml(item.s) +
+              (item.sub ? '<span class="lesson-sub"> · ' + escapeHtml(item.sub) + '</span>' : '') +
+            '</div>' + gradeBtn +
+          '</div>' +
+          body +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function renderWeek(){
+    var today = new Date();
+    var html = "", tabsHtml = "";
+    var weekTotal = 0, weekDone = 0;
+
+    for (var i = 0; i < 5; i++){
+      var dayNum = i + 1;
+      var date = addDays(weekStart, i);
+      var dateIso = isoDate(date);
+      var isToday = sameDate(date, today);
+      var lessons = SCHEDULE[dayNum] || [];
+      var rows = "", dayTotal = 0, dayDone = 0;
+
+      lessons.forEach(function(item){
+        var hw = homework[docId(dateIso, item.n)];
+        if (hw && hw.text){ dayTotal++; if (hw.done) dayDone++; }
+        rows += lessonRowHtml(dateIso, item);
+      });
+      weekTotal += dayTotal; weekDone += dayDone;
+
+      var badge = "";
+      if (dayTotal > 0){
+        badge = dayDone === dayTotal
+          ? '<span class="day-badge all-done">✓</span>'
+          : '<span class="day-badge">' + (dayTotal - dayDone) + '</span>';
+      }
+
+      html +=
+        '<div class="day-col' + (isToday ? ' is-today' : '') + (dayNum === mobileDay ? ' mobile-active' : '') + '">' +
+          '<div class="day-head">' +
+            '<div>' +
+              '<div class="day-name">' + DAY_NAMES[dayNum] + '</div>' +
+              '<div class="day-date">' + fmtShort(date) + '</div>' +
+            '</div>' + badge +
+          '</div>' +
+          '<div class="lesson-list">' + rows + '</div>' +
+        '</div>';
+
+      tabsHtml +=
+        '<button type="button" class="day-tab' + (dayNum === mobileDay ? ' active' : '') + (isToday ? ' has-today' : '') + '" data-day="' + dayNum + '">' +
+          (dayTotal > dayDone ? '<span class="dt-dot"></span>' : '') +
+          '<span class="dt-name">' + DAY_SHORT[dayNum] + '</span>' +
+          '<span class="dt-date">' + date.getDate() + '</span>' +
+        '</button>';
+    }
+
+    document.getElementById("weekGrid").innerHTML = html;
+    document.getElementById("dayTabs").innerHTML = tabsHtml;
+    document.getElementById("weekLabel").textContent = fmtShort(weekStart) + " – " + fmtShort(addDays(weekStart, 4));
+    document.getElementById("weekStats").innerHTML =
+      weekTotal === 0 ? "Немає завдань на цей тиждень" : "<b>" + weekDone + " / " + weekTotal + "</b> завдань виконано";
+
+    if (editingId){
+      var ta = document.getElementById("hwta");
+      if (ta){ ta.focus(); var v = ta.value; ta.value = ""; ta.value = v; }
+    }
+    if (flashId){
+      var row = document.querySelector('[data-row="' + flashId + '"]');
+      flashId = null;
+      if (row){
+        row.classList.add("flash");
+        row.scrollIntoView({ block: "center", behavior: "smooth" });
+        setTimeout(function(){ row.classList.remove("flash"); }, 1500);
+      }
+    }
+  }
+
+  // ---------- grades view ----------
+  function renderGrades(){
+    var groups = {}, all = [];
+    for (var id in grades){
+      var g = grades[id];
+      if (!g || !g.value) continue;
+      var key = g.subject || "Без предмета";
+      (groups[key] = groups[key] || []).push(g);
+      all.push(g.value);
+    }
+
+    var box = document.getElementById("gradesBody");
+    if (all.length === 0){
+      box.innerHTML =
+        '<div class="empty-state">Оцінок поки немає.<br>' +
+        'Постав першу на вкладці <b>Щоденник</b> — натисни кружечок <b>+</b> біля предмета.</div>';
+      return;
+    }
+
+    var avgAll = all.reduce(function(a, b){ return a + b; }, 0) / all.length;
+    var names = Object.keys(groups).sort(function(a, b){
+      return avgOf(groups[b]) - avgOf(groups[a]);
+    });
+
+    var rows = "";
+    names.forEach(function(name){
+      var list = groups[name].slice().sort(function(a, b){
+        return String(b.date).localeCompare(String(a.date));
+      });
+      var avg = avgOf(list);
+      var band = gradeBand(Math.round(avg));
+      var chips = list.slice(0, 12).map(function(g){
+        return '<span class="mark-chip g-' + gradeBand(g.value) + '" title="' + escapeHtml(String(g.date || "")) + '">' + g.value + '</span>';
+      }).join("");
+      rows +=
+        '<div class="subj-row">' +
+          '<div class="subj-head">' +
+            '<span class="subj-name">' + escapeHtml(name) + '</span>' +
+            '<span class="subj-avg g-' + band + '">' + avg.toFixed(1) + '</span>' +
+          '</div>' +
+          '<div class="subj-bar"><span class="bar-' + band + '" style="width:' + (avg / 12 * 100).toFixed(1) + '%"></span></div>' +
+          '<div class="subj-marks">' + chips + '</div>' +
+        '</div>';
+    });
+
+    box.innerHTML =
+      '<div class="grades-summary">' +
+        '<div class="avg-big">' + avgAll.toFixed(1) + '</div>' +
+        '<div class="avg-meta">середній бал<br><b>' + all.length + '</b> оцінок · <b>' + names.length + '</b> предметів</div>' +
+      '</div>' +
+      '<div class="subj-list">' + rows + '</div>';
+  }
+  function avgOf(list){
+    return list.reduce(function(a, g){ return a + g.value; }, 0) / list.length;
+  }
+
+  // ---------- schedule table ----------
+  function renderSchedule(){
+    var head = "<thead><tr><th>Урок</th>";
+    for (var d = 1; d <= 5; d++){ head += "<th>" + DAY_NAMES[d] + "</th>"; }
+    head += "</tr></thead>";
+
+    var body = "<tbody>";
+    for (var n = 1; n <= 7; n++){
+      body += '<tr><td class="num">' + n + "</td>";
+      for (var day = 1; day <= 5; day++){
+        var item = lessonAtWeekday(day, n);
+        body += item
+          ? "<td>" + escapeHtml(item.s) + (item.sub ? '<span class="sub">' + escapeHtml(item.sub) + "</span>" : "") + "</td>"
+          : '<td class="dash">—</td>';
+      }
+      body += "</tr>";
+    }
+    document.getElementById("scheduleTable").innerHTML = head + body + "</tbody>";
+  }
+  function lessonAtWeekday(weekday, lessonNum){
+    var lessons = SCHEDULE[weekday] || [];
+    for (var i = 0; i < lessons.length; i++){ if (lessons[i].n === lessonNum) return lessons[i]; }
+    return null;
+  }
+
+  function render(){ renderHero(); renderWeek(); renderGrades(); }
+
+  // ---------- backup ----------
+  function exportBackup(){
+    var payload = JSON.stringify({
+      app: "shchodennyk", version: 1,
+      exportedAt: new Date().toISOString(),
+      homework: homework, grades: grades
+    }, null, 2);
+    var filename = "shchodennyk-" + isoDate(new Date()) + ".json";
+
+    var url = URL.createObjectURL(new Blob([payload], { type: "application/json" }));
+    var a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+    toast("Копію збережено");
+  }
+
+  function importBackup(file){
+    var reader = new FileReader();
+    reader.onload = function(){
+      var data;
+      try { data = JSON.parse(String(reader.result)); } catch(e){ toast("Не вдалося прочитати файл"); return; }
+      if (!data || typeof data !== "object"){ toast("Файл не підходить"); return; }
+
+      var count = 0, id, info;
+      var hwIn = (data.homework && typeof data.homework === "object") ? data.homework : {};
+      for (id in hwIn){
+        info = parseId(id);
+        var h = hwIn[id];
+        if (!info || !h || typeof h.text !== "string" || !h.text) continue;
+        saveDoc("hw", id, {
+          date: isoDate(info.date), lessonNum: info.lessonNum,
+          text: h.text, done: !!h.done, updatedAt: Date.now()
+        }, true);
+        count++;
+      }
+      var grIn = (data.grades && typeof data.grades === "object") ? data.grades : {};
+      for (id in grIn){
+        info = parseId(id);
+        var g = grIn[id];
+        if (!info || !g) continue;
+        var val = Math.round(Number(g.value));
+        if (!(val >= 1 && val <= 12)) continue;
+        var item = lessonAt(info.date, info.lessonNum);
+        saveDoc("grade", id, {
+          date: isoDate(info.date), lessonNum: info.lessonNum,
+          subject: item ? subjectKey(item) : (g.subject || ""),
+          value: val, updatedAt: Date.now()
+        }, true);
+        count++;
+      }
+      render();
+      toast(count ? "Відновлено записів: " + count : "У файлі немає записів");
+    };
+    reader.onerror = function(){ toast("Не вдалося прочитати файл"); };
+    reader.readAsText(file);
+  }
+
+  // ---------- events ----------
+  document.getElementById("weekGrid").addEventListener("click", function(e){
+    var btn = e.target.closest("[data-act]");
+    if (!btn) return;
+    var act = btn.getAttribute("data-act");
+    var id = btn.getAttribute("data-id");
+
+    if (act === "add" || act === "edit"){
+      editingId = id; gradeEditingId = null; renderWeek();
+    } else if (act === "cancel"){
+      editingId = null; renderWeek();
+    } else if (act === "save"){
+      var ta = document.getElementById("hwta");
+      var text = ta ? ta.value.trim() : "";
+      editingId = null;
+      if (!text){ renderWeek(); return; }
+      var info = parseId(id);
+      var prev = homework[id] || {};
+      saveDoc("hw", id, {
+        date: isoDate(info.date), lessonNum: info.lessonNum,
+        text: text, done: !!prev.done, updatedAt: Date.now()
+      });
+      renderHero(); renderWeek();
+    } else if (act === "delete"){
+      removeDoc("hw", id);
+    } else if (act === "grade"){
+      gradeEditingId = (gradeEditingId === id) ? null : id;
+      editingId = null;
+      renderWeek();
+    } else if (act === "setgrade"){
+      var value = parseInt(btn.getAttribute("data-val"), 10);
+      var gi = parseId(id);
+      var gItem = lessonAt(gi.date, gi.lessonNum);
+      gradeEditingId = null;
+      saveDoc("grade", id, {
+        date: isoDate(gi.date), lessonNum: gi.lessonNum,
+        subject: gItem ? subjectKey(gItem) : "",
+        value: value, updatedAt: Date.now()
+      });
+      renderWeek(); renderGrades();
+    } else if (act === "delgrade"){
+      gradeEditingId = null;
+      removeDoc("grade", id);
+      renderWeek(); renderGrades();
+    }
+  });
+
+  document.getElementById("weekGrid").addEventListener("change", function(e){
+    if (!e.target.matches('[data-act="toggle"]')) return;
+    var id = e.target.getAttribute("data-id");
+    var cur = homework[id];
+    if (!cur) return;
+    saveDoc("hw", id, {
+      date: cur.date, lessonNum: cur.lessonNum, text: cur.text,
+      done: e.target.checked, updatedAt: Date.now()
+    });
+    renderHero(); renderWeek();
+  });
+
+  document.getElementById("weekGrid").addEventListener("keydown", function(e){
+    if (e.target.id !== "hwta") return;
+    if (e.key === "Escape"){ editingId = null; renderWeek(); }
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)){
+      e.preventDefault();
+      var saveBtn = document.querySelector(".btn-save[data-id]");
+      if (saveBtn) saveBtn.click();
+    }
+  });
+
+  document.getElementById("hero").addEventListener("click", function(e){
+    var btn = e.target.closest("[data-goto]");
+    if (!btn) return;
+    var info = parseId(btn.getAttribute("data-goto"));
+    if (!info) return;
+    weekStart = mondayOf(info.date);
+    mobileDay = clampWeekday(info.date.getDay());
+    flashId = btn.getAttribute("data-goto");
+    editingId = null; gradeEditingId = null;
+    renderWeek();
+  });
+
+  document.getElementById("dayTabs").addEventListener("click", function(e){
+    var btn = e.target.closest(".day-tab");
+    if (!btn) return;
+    mobileDay = parseInt(btn.getAttribute("data-day"), 10);
+    renderWeek();
+  });
+
+  function shiftWeek(n){
+    weekStart = addDays(weekStart, n * 7);
+    editingId = null; gradeEditingId = null;
+    renderHero(); renderWeek();
+  }
+  document.getElementById("prevWeek").addEventListener("click", function(){ shiftWeek(-1); });
+  document.getElementById("nextWeek").addEventListener("click", function(){ shiftWeek(1); });
+  document.getElementById("todayBtn").addEventListener("click", function(){
+    weekStart = mondayOf(new Date());
+    mobileDay = clampWeekday(new Date().getDay());
+    editingId = null; gradeEditingId = null;
+    renderHero(); renderWeek();
+  });
+
+  document.addEventListener("keydown", function(e){
+    if (e.target.matches("input, textarea")) return;
+    if (document.getElementById("diary-view").hidden) return;
+    if (e.key === "ArrowLeft") shiftWeek(-1);
+    else if (e.key === "ArrowRight") shiftWeek(1);
+  });
+
+  document.getElementById("exportBtn").addEventListener("click", exportBackup);
+  document.getElementById("importBtn").addEventListener("click", function(){
+    document.getElementById("importFile").click();
+  });
+  document.getElementById("importFile").addEventListener("change", function(e){
+    var file = e.target.files && e.target.files[0];
+    if (file) importBackup(file);
+    e.target.value = "";
+  });
+
+  var tabs = document.querySelectorAll(".tab");
+  tabs.forEach(function(tab){
+    tab.addEventListener("click", function(){
+      tabs.forEach(function(t){ t.classList.remove("active"); });
+      tab.classList.add("active");
+      var target = tab.getAttribute("data-tab");
+      document.getElementById("diary-view").hidden = target !== "diary";
+      document.getElementById("grades-view").hidden = target !== "grades";
+      document.getElementById("schedule-view").hidden = target !== "schedule";
+    });
+  });
+
+  renderSchedule();
+  render();
+  initStore();
+})();
+
+if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0){
+  window.addEventListener("load", function(){
+    navigator.serviceWorker.register("sw.js").catch(function(){});
+  });
+}
+</script>
+</body>
+</html>
