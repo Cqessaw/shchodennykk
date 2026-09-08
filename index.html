@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Щоденник</title>
 <meta name="theme-color" content="#0B0908">
 <meta name="mobile-web-app-capable" content="yes">
@@ -86,7 +86,10 @@
   }
 
   *{box-sizing:border-box;}
-  html{background:var(--bg);-webkit-text-size-adjust:100%;}
+  html{
+    background:var(--bg);-webkit-text-size-adjust:100%;text-size-adjust:100%;
+    touch-action:pan-x pan-y;   /* прокрутка так, масштабування ні */
+  }
   body{
     margin:0;background:var(--bg);color:var(--text);
     font-family:"Golos Text","Segoe UI",system-ui,sans-serif;
@@ -123,10 +126,15 @@
   .theme-btn:hover{border-color:var(--line-strong);color:var(--text);}
   .theme-ico{font-size:14px;line-height:1;}
 
-  .tabs{display:flex;gap:3px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:3px;}
+  .tabs{
+    display:flex;gap:3px;background:var(--panel);border:1px solid var(--line);
+    border-radius:999px;padding:3px;max-width:100%;overflow-x:auto;
+    scrollbar-width:none;
+  }
+  .tabs::-webkit-scrollbar{display:none;}
   .tab{
-    border:none;background:transparent;color:var(--text-soft);
-    font-weight:600;font-size:13.5px;padding:8px 15px;border-radius:999px;cursor:pointer;
+    border:none;background:transparent;color:var(--text-soft);flex:none;white-space:nowrap;
+    font-weight:600;font-size:13.5px;padding:8px 14px;border-radius:999px;cursor:pointer;
   }
   .tab:hover{color:var(--text);}
   .tab.active{background:var(--accent);color:var(--on-accent);}
@@ -221,7 +229,7 @@
 
   /* ---------- сітка тижня ---------- */
   .week-scroll{overflow-x:auto;padding-bottom:6px;}
-  .week-grid{display:grid;grid-template-columns:repeat(5,minmax(224px,1fr));gap:14px;}
+  .week-grid{display:grid;grid-template-columns:repeat(6,minmax(184px,1fr));gap:14px;}
   .day-col{
     background:var(--panel);border:1px solid var(--line);border-radius:16px;
     box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;
@@ -435,6 +443,82 @@
   .sync-form input:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--accent-soft);}
   .sync-warn{margin:12px 0 0;color:var(--text-faint);font-size:12px;line-height:1.55;}
 
+  /* ---------- семестри ---------- */
+  .toolbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .sem-chip{
+    font-size:12.5px;font-weight:600;color:var(--accent);
+    background:var(--accent-soft);border:1px solid var(--accent-line);
+    padding:7px 13px;border-radius:999px;white-space:nowrap;
+  }
+  .sem-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+  .sem-tab{
+    border:1px solid var(--line);background:var(--panel);color:var(--text-soft);
+    font-family:inherit;font-weight:600;font-size:13px;
+    padding:8px 15px;border-radius:999px;cursor:pointer;
+  }
+  .sem-tab:hover{color:var(--text);border-color:var(--line-strong);}
+  .sem-tab.active{background:var(--accent);border-color:var(--accent);color:var(--on-accent);}
+  .sem-range{margin:0 0 12px;color:var(--text-soft);font-size:13px;}
+  .note-line{
+    background:var(--amber-soft);border:1px solid var(--amber-line);color:var(--text);
+    border-radius:12px;padding:11px 14px;font-size:13px;line-height:1.55;margin-bottom:12px;
+  }
+  .sem-editor{
+    margin-top:16px;background:var(--panel);border:1px solid var(--line);
+    border-radius:16px;padding:18px 20px;box-shadow:var(--shadow);
+  }
+  .sem-dates{display:flex;gap:10px;flex-wrap:wrap;}
+  .sem-dates label{
+    display:flex;flex-direction:column;gap:5px;
+    font-size:12px;color:var(--text-soft);font-weight:600;
+  }
+  .sem-dates input{
+    border:1px solid var(--line-strong);background:var(--panel-2);color:var(--text);
+    border-radius:10px;padding:9px 11px;font-family:inherit;font-size:16px;
+  }
+  .sem-dates input:focus{border-color:var(--accent);outline:none;}
+
+  /* ---------- субота ---------- */
+  .day-col.is-sat .day-head{background:var(--panel-2);}
+  .sat-bar{padding:10px 16px;border-bottom:1px solid var(--line);}
+  .sat-select{
+    width:100%;border:1px solid var(--line-strong);background:var(--panel);color:var(--text);
+    border-radius:10px;padding:8px 10px;font-family:inherit;font-size:16px;cursor:pointer;
+  }
+  .sat-select:focus{border-color:var(--accent);outline:none;}
+  .day-empty{padding:14px 16px;color:var(--text-faint);font-size:12.5px;line-height:1.5;}
+
+  /* ---------- підручники ---------- */
+  .books-hint{margin:0 0 14px;color:var(--text-soft);font-size:13px;line-height:1.55;}
+  .book-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
+  .book-row{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:14px 16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px;
+  }
+  .book-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .book-name{font-weight:600;font-size:14px;}
+  .book-link{
+    display:block;text-decoration:none;font-size:13px;font-weight:600;
+    color:var(--accent);background:var(--accent-soft);border:1px solid var(--accent-line);
+    border-radius:10px;padding:9px 12px;
+  }
+  .book-link:hover{filter:brightness(.97);}
+  .book-link.gdz{color:var(--green);background:var(--green-soft);border-color:var(--green-line);}
+  .book-link::after{content:" ↗";opacity:.6;}
+  .book-empty{
+    display:block;width:100%;text-align:left;cursor:pointer;
+    border:1px dashed var(--line-strong);background:transparent;color:var(--text-faint);
+    border-radius:10px;padding:9px 12px;font-family:inherit;font-size:12.5px;font-weight:600;
+  }
+  .book-empty:hover{border-color:var(--accent);color:var(--accent);}
+  .book-label{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-faint);font-weight:700;}
+  .book-input{
+    width:100%;border:1px solid var(--line-strong);background:var(--panel-2);color:var(--text);
+    border-radius:10px;padding:10px 12px;font-family:inherit;font-size:16px;
+  }
+  .book-input:focus{border-color:var(--accent);outline:none;}
+  .book-actions{display:flex;gap:7px;}
+
   .toast{
     position:fixed;left:50%;bottom:24px;transform:translateX(-50%);
     background:var(--panel);border:1px solid var(--line-strong);
@@ -500,6 +584,7 @@
         <button class="tab active" data-tab="diary" type="button">Щоденник</button>
         <button class="tab" data-tab="grades" type="button">Оцінки</button>
         <button class="tab" data-tab="schedule" type="button">Розклад</button>
+        <button class="tab" data-tab="books" type="button">Підручники</button>
       </nav>
     </div>
   </header>
@@ -514,7 +599,10 @@
         <button class="nav-btn" id="nextWeek" type="button" aria-label="Наступний тиждень">›</button>
         <button class="today-btn" id="todayBtn" type="button">Сьогодні</button>
       </div>
-      <div class="week-stats" id="weekStats"></div>
+      <div class="toolbar-right">
+        <span class="sem-chip" id="semChip"></span>
+        <div class="week-stats" id="weekStats"></div>
+      </div>
     </div>
 
     <div class="day-tabs" id="dayTabs"></div>
@@ -546,13 +634,31 @@
   </section>
 
   <section id="grades-view" hidden>
+    <div class="sem-tabs" id="gradeScope"></div>
     <div id="gradesBody"></div>
   </section>
 
   <section id="schedule-view" hidden>
+    <div class="sem-tabs" id="semTabs"></div>
+    <p class="sem-range" id="semRange"></p>
+    <div id="semNote"></div>
     <div class="schedule-wrap">
       <table class="schedule" id="scheduleTable"></table>
     </div>
+    <div class="sem-editor">
+      <div class="sync-title">Межі семестрів</div>
+      <p class="sync-hint">Від цих дат залежить, який розклад показувати і до якого семестру належать оцінки.</p>
+      <div class="sem-dates">
+        <label>I семестр, з<input type="date" id="date-s1from"></label>
+        <label>по<input type="date" id="date-s1to"></label>
+        <label>II семестр, з<input type="date" id="date-s2from"></label>
+        <label>по<input type="date" id="date-s2to"></label>
+      </div>
+    </div>
+  </section>
+
+  <section id="books-view" hidden>
+    <div id="booksBody"></div>
   </section>
 </div>
 
@@ -562,11 +668,13 @@
 (function(){
   "use strict";
 
-  var DAY_NAMES = ["", "Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця"];
-  var DAY_SHORT = ["", "Пн", "Вт", "Ср", "Чт", "Пт"];
+  var DAY_NAMES = ["", "Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота"];
+  var DAY_SHORT = ["", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
+  var DAY_ACC   = ["", "понеділок", "вівторок", "середу", "четвер", "п'ятницю"];
   var MONTHS_GEN = ["січня","лютого","березня","квітня","травня","червня","липня","серпня","вересня","жовтня","листопада","грудня"];
 
-  var SCHEDULE = {
+  // Розклад першого семестру. Другий поки не заданий — див. SCHEDULES нижче.
+  var SCHEDULE_1 = {
     1: [
       {n:1, s:"Українська література"},
       {n:2, s:"Математика", sub:"Алгебра"},
@@ -611,6 +719,18 @@
     ]
   };
 
+  // Розклад другого семестру. Коли він з'явиться — вписати сюди такий самий
+  // об'єкт, як SCHEDULE_1. Поки null, другий семестр показує розклад першого.
+  var SCHEDULE_2 = null;
+  var SCHEDULES = { 1: SCHEDULE_1, 2: SCHEDULE_2 };
+  function scheduleFor(sem){ return SCHEDULES[sem] || SCHEDULES[1]; }
+  function scheduleKnown(sem){ return !!SCHEDULES[sem]; }
+
+  var DEFAULT_SEMESTERS = {
+    s1from: "2026-09-01", s1to: "2026-12-26",
+    s2from: "2027-01-12", s2to: "2027-05-29"
+  };
+
   function categoryOf(subject){
     var p = subject.split(" / ")[0];
     if (/Історія/.test(p)) return "social";
@@ -641,8 +761,31 @@
     if (!m) return null;
     return { date: new Date(+m[1], +m[2]-1, +m[3]), lessonNum: +m[4] };
   }
+  // Який семестр за датою. Поза межами навчального року вважаємо найближчий,
+  // щоб розклад завжди було на що спиратися.
+  function semesterOf(date){
+    return isoDate(date) < semesters.s2from ? 1 : 2;
+  }
+  function semesterLabel(date){
+    var iso = isoDate(date);
+    if (iso >= semesters.s1from && iso <= semesters.s1to) return "I семестр";
+    if (iso >= semesters.s2from && iso <= semesters.s2to) return "II семестр";
+    return "канікули";
+  }
+  // Уроки конкретного дня: Пн–Пт зі свого семестру, субота — за тим днем,
+  // який школа призначила відпрацьовувати; неділя завжди порожня.
+  function lessonsForDate(date){
+    var sch = scheduleFor(semesterOf(date));
+    var wd = date.getDay();
+    if (wd >= 1 && wd <= 5) return sch[wd] || [];
+    if (wd === 6){
+      var src = satPlan[isoDate(date)];
+      return src ? (sch[src] || []) : [];
+    }
+    return [];
+  }
   function lessonAt(date, lessonNum){
-    var lessons = SCHEDULE[date.getDay()] || [];
+    var lessons = lessonsForDate(date);
     for (var i = 0; i < lessons.length; i++){ if (lessons[i].n === lessonNum) return lessons[i]; }
     return null;
   }
@@ -650,7 +793,7 @@
     var key = subjectKey(item);
     for (var offset = 1; offset <= 14; offset++){
       var d = addDays(fromDate, offset);
-      var lessons = SCHEDULE[d.getDay()] || [];
+      var lessons = lessonsForDate(d);
       for (var i = 0; i < lessons.length; i++){
         if (subjectKey(lessons[i]) === key) return d;
       }
@@ -666,7 +809,7 @@
     return { text: "до " + fmtShort(dueDate), cls: "later" };
   }
   function gradeBand(v){ return v >= 10 ? "high" : v >= 7 ? "good" : v >= 4 ? "mid" : "low"; }
-  function clampWeekday(day){ return (day >= 1 && day <= 5) ? day : 1; }
+  function clampWeekday(day){ return (day >= 1 && day <= 6) ? day : 1; }
   function lessonsWord(n){
     var d10 = n % 10, d100 = n % 100;
     if (d10 === 1 && d100 !== 11) return "урок";
@@ -685,6 +828,17 @@
   var HW_KEY = "shchodennyk_homework_v1";
   var GRADE_KEY = "shchodennyk_grades_v1";
   var ROOM_KEY = "shchodennyk_room_v1";
+  var CONFIG_KEY = "shchodennyk_config_v1";
+
+  // Спільні налаштування класу: відпрацьовані суботи, підручники, межі семестрів.
+  var satPlan = {};                 // "2026-09-12" -> 1..5
+  var books = {};                   // предмет -> {book, gdz}
+  var semesters = {};
+  Object.keys(DEFAULT_SEMESTERS).forEach(function(k){ semesters[k] = DEFAULT_SEMESTERS[k]; });
+
+  var scheduleSem = null;           // який семестр показує вкладка «Розклад»
+  var gradesScope = null;           // 1 | 2 | "all" на вкладці «Оцінки»
+  var booksEditing = null;          // предмет, для якого відкрита форма посилань
 
   var roomCode = "";
   try { roomCode = localStorage.getItem(ROOM_KEY) || ""; } catch(e){}
@@ -699,6 +853,31 @@
   function loadLocal(){
     try { homework = JSON.parse(localStorage.getItem(HW_KEY) || "{}") || {}; } catch(e){ homework = {}; }
     try { grades = JSON.parse(localStorage.getItem(GRADE_KEY) || "{}") || {}; } catch(e){ grades = {}; }
+    var cfg = {};
+    try { cfg = JSON.parse(localStorage.getItem(CONFIG_KEY) || "{}") || {}; } catch(e){}
+    applyConfig(cfg);
+  }
+  function applyConfig(cfg){
+    satPlan = (cfg && cfg.days && typeof cfg.days === "object") ? cfg.days : {};
+    books = (cfg && cfg.books && typeof cfg.books === "object") ? cfg.books : {};
+    Object.keys(DEFAULT_SEMESTERS).forEach(function(k){
+      semesters[k] = (cfg && cfg.semesters && typeof cfg.semesters[k] === "string" && /^\d{4}-\d{2}-\d{2}$/.test(cfg.semesters[k]))
+        ? cfg.semesters[k] : DEFAULT_SEMESTERS[k];
+    });
+  }
+  function configSnapshot(){
+    return { days: satPlan, books: books, semesters: semesters };
+  }
+  function saveConfig(part){
+    try { localStorage.setItem(CONFIG_KEY, JSON.stringify(configSnapshot())); } catch(e){}
+    if (roomCode && window.Sync && window.Sync.available && window.Sync.setConfig){
+      var payload = part === "days" ? { plan: satPlan }
+                  : part === "books" ? { items: books }
+                  : { value: semesters };
+      window.Sync.setConfig(roomCode, part, payload).catch(function(){
+        toast("Налаштування збережено лише на цьому пристрої");
+      });
+    }
   }
   function saveLocal(kind){
     try { localStorage.setItem(keyOf(kind), JSON.stringify(mapOf(kind))); } catch(e){}
@@ -737,6 +916,21 @@
     firstSnapshot = true;
     syncState = "connecting";
     renderSync();
+
+    if (window.Sync.connectConfig){
+      window.Sync.connectConfig(code, function(cfg){
+        if (cfg.days && cfg.days.plan) satPlan = cfg.days.plan;
+        if (cfg.books && cfg.books.items) books = cfg.books.items;
+        if (cfg.semesters && cfg.semesters.value){
+          Object.keys(DEFAULT_SEMESTERS).forEach(function(k){
+            var v = cfg.semesters.value[k];
+            if (typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v)) semesters[k] = v;
+          });
+        }
+        try { localStorage.setItem(CONFIG_KEY, JSON.stringify(configSnapshot())); } catch(e){}
+        render();
+      }, function(){});
+    }
 
     window.Sync.connect(code, function(map){
       homework = map;
@@ -893,9 +1087,10 @@
 
   function weekProgress(){
     var total = 0, done = 0;
-    for (var i = 0; i < 5; i++){
-      var dateIso = isoDate(addDays(weekStart, i));
-      (SCHEDULE[i + 1] || []).forEach(function(item){
+    for (var i = 0; i < 6; i++){
+      var day = addDays(weekStart, i);
+      var dateIso = isoDate(day);
+      lessonsForDate(day).forEach(function(item){
         var hw = homework[docId(dateIso, item.n)];
         if (hw && hw.text){ total++; if (hw.done) done++; }
       });
@@ -980,12 +1175,14 @@
     var html = "", tabsHtml = "";
     var weekTotal = 0, weekDone = 0;
 
-    for (var i = 0; i < 5; i++){
+    for (var i = 0; i < 6; i++){
       var dayNum = i + 1;
       var date = addDays(weekStart, i);
       var dateIso = isoDate(date);
       var isToday = sameDate(date, today);
-      var lessons = SCHEDULE[dayNum] || [];
+      var isSat = dayNum === 6;
+      var satFor = isSat ? (satPlan[dateIso] || 0) : 0;
+      var lessons = lessonsForDate(date);
       var rows = "", dayTotal = 0, dayDone = 0;
 
       lessons.forEach(function(item){
@@ -1002,15 +1199,30 @@
           : '<span class="day-badge">' + (dayTotal - dayDone) + '</span>';
       }
 
+      var sub = isSat
+        ? (satFor ? "за " + DAY_ACC[satFor] : "вихідна")
+        : lessons.length + " " + lessonsWord(lessons.length);
+
+      var satPicker = "";
+      if (isSat){
+        var opts = '<option value="0"' + (satFor ? "" : " selected") + ">вихідна</option>";
+        for (var w = 1; w <= 5; w++){
+          opts += '<option value="' + w + '"' + (satFor === w ? " selected" : "") + ">за " + DAY_ACC[w] + "</option>";
+        }
+        satPicker = '<select class="sat-select" data-date="' + dateIso + '" aria-label="За який день ця субота">' + opts + '</select>';
+      }
+
       html +=
-        '<div class="day-col' + (isToday ? ' is-today' : '') + (dayNum === mobileDay ? ' mobile-active' : '') + '">' +
+        '<div class="day-col' + (isToday ? ' is-today' : '') + (isSat ? ' is-sat' : '') + (dayNum === mobileDay ? ' mobile-active' : '') + '">' +
           '<div class="day-head">' +
             '<div>' +
               '<div class="day-name">' + DAY_NAMES[dayNum] + '</div>' +
-              '<div class="day-date">' + fmtShort(date) + ' · ' + lessons.length + ' ' + lessonsWord(lessons.length) + '</div>' +
+              '<div class="day-date">' + fmtShort(date) + ' · ' + sub + '</div>' +
             '</div>' + badge +
           '</div>' +
+          (satPicker ? '<div class="sat-bar">' + satPicker + '</div>' : '') +
           '<div class="lesson-list">' + rows + '</div>' +
+          (isSat && !satFor ? '<div class="day-empty">Уроків немає. Якщо субота навчальна — обери день, за який вона йде.</div>' : '') +
         '</div>';
 
       tabsHtml +=
@@ -1023,9 +1235,10 @@
 
     document.getElementById("weekGrid").innerHTML = html;
     document.getElementById("dayTabs").innerHTML = tabsHtml;
-    document.getElementById("weekLabel").textContent = fmtShort(weekStart) + " – " + fmtShort(addDays(weekStart, 4));
+    document.getElementById("weekLabel").textContent = fmtShort(weekStart) + " – " + fmtShort(addDays(weekStart, 5));
     document.getElementById("weekStats").innerHTML =
       weekTotal === 0 ? "Немає завдань на цей тиждень" : "<b>" + weekDone + " / " + weekTotal + "</b> завдань виконано";
+    document.getElementById("semChip").textContent = semesterLabel(weekStart);
 
     if (editingId){
       var ta = document.getElementById("hwta");
@@ -1043,11 +1256,28 @@
   }
 
   // ---------- grades view ----------
+  function inSemester(iso, sem){
+    if (sem === "all") return true;
+    return sem === 1
+      ? (iso >= semesters.s1from && iso <= semesters.s1to)
+      : (iso >= semesters.s2from && iso <= semesters.s2to);
+  }
+
   function renderGrades(){
+    if (gradesScope === null) gradesScope = semesterOf(new Date());
+
+    document.getElementById("gradeScope").innerHTML = [
+      { v: 1, t: "I семестр" }, { v: 2, t: "II семестр" }, { v: "all", t: "Весь рік" }
+    ].map(function(o){
+      return '<button type="button" class="sem-tab' + (String(o.v) === String(gradesScope) ? " active" : "") +
+        '" data-scope="' + o.v + '">' + o.t + "</button>";
+    }).join("");
+
     var groups = {}, all = [];
     for (var id in grades){
       var g = grades[id];
       if (!g || !g.value) continue;
+      if (!inSemester(String(g.date || ""), gradesScope)) continue;
       var key = g.subject || "Без предмета";
       (groups[key] = groups[key] || []).push(g);
       all.push(g.value);
@@ -1056,8 +1286,11 @@
     var box = document.getElementById("gradesBody");
     if (all.length === 0){
       box.innerHTML =
-        '<div class="empty-state">Оцінок поки немає.<br>' +
-        'Постав першу на вкладці <b>Щоденник</b> — натисни кружечок <b>+</b> біля предмета.</div>';
+        '<div class="empty-state">' +
+        (gradesScope === "all"
+          ? "Оцінок поки немає.<br>Постав першу на вкладці <b>Щоденник</b> — натисни кружечок <b>+</b> біля предмета."
+          : "За цей семестр оцінок ще немає.") +
+        '</div>';
       return;
     }
 
@@ -1100,6 +1333,24 @@
 
   // ---------- schedule table ----------
   function renderSchedule(){
+    if (scheduleSem === null) scheduleSem = semesterOf(new Date());
+    var sch = scheduleFor(scheduleSem);
+
+    document.getElementById("semTabs").innerHTML = [1, 2].map(function(s){
+      return '<button type="button" class="sem-tab' + (s === scheduleSem ? " active" : "") + '" data-sem="' + s + '">' +
+        (s === 1 ? "I семестр" : "II семестр") + "</button>";
+    }).join("");
+
+    var range = scheduleSem === 1
+      ? semesters.s1from + " — " + semesters.s1to
+      : semesters.s2from + " — " + semesters.s2to;
+    document.getElementById("semRange").textContent = "Триває з " + fmtIso(range.split(" — ")[0]) + " до " + fmtIso(range.split(" — ")[1]);
+
+    document.getElementById("semNote").innerHTML = scheduleKnown(scheduleSem)
+      ? ""
+      : '<div class="note-line">Розклад другого семестру ще не заданий — показано розклад першого. ' +
+        'Коли школа видасть новий, його треба вписати у код (константа <b>SCHEDULE_2</b>).</div>';
+
     var head = "<thead><tr><th>Урок</th>";
     for (var d = 1; d <= 5; d++){ head += "<th>" + DAY_NAMES[d] + "</th>"; }
     head += "</tr></thead>";
@@ -1108,7 +1359,7 @@
     for (var n = 1; n <= 7; n++){
       body += '<tr><td class="num">' + n + "</td>";
       for (var day = 1; day <= 5; day++){
-        var item = lessonAtWeekday(day, n);
+        var item = lessonAtWeekday(sch, day, n);
         body += item
           ? "<td>" + escapeHtml(item.s) + (item.sub ? '<span class="sub">' + escapeHtml(item.sub) + "</span>" : "") + "</td>"
           : '<td class="dash">—</td>';
@@ -1116,14 +1367,91 @@
       body += "</tr>";
     }
     document.getElementById("scheduleTable").innerHTML = head + body + "</tbody>";
+
+    ["s1from","s1to","s2from","s2to"].forEach(function(k){
+      var el = document.getElementById("date-" + k);
+      if (el && el.value !== semesters[k]) el.value = semesters[k];
+    });
   }
-  function lessonAtWeekday(weekday, lessonNum){
-    var lessons = SCHEDULE[weekday] || [];
+  function lessonAtWeekday(sch, weekday, lessonNum){
+    var lessons = (sch && sch[weekday]) || [];
     for (var i = 0; i < lessons.length; i++){ if (lessons[i].n === lessonNum) return lessons[i]; }
     return null;
   }
+  function fmtIso(iso){
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || "");
+    if (!m) return iso || "—";
+    return (+m[3]) + " " + MONTHS_GEN[+m[2] - 1] + " " + m[1];
+  }
 
-  function render(){ renderHero(); renderWeek(); renderGrades(); }
+  // ---------- підручники ----------
+  function safeUrl(u){
+    var s = String(u || "").trim();
+    return /^https?:\/\//i.test(s) ? s : "";
+  }
+  function subjectsOfSemester(sem){
+    var sch = scheduleFor(sem), seen = {}, out = [];
+    for (var d = 1; d <= 5; d++){
+      (sch[d] || []).forEach(function(item){
+        var key = subjectKey(item);
+        if (!seen[key]){ seen[key] = 1; out.push(key); }
+      });
+    }
+    return out.sort(function(a, b){ return a.localeCompare(b, "uk"); });
+  }
+
+  function renderBooks(){
+    var sem = scheduleSem === null ? semesterOf(new Date()) : scheduleSem;
+    var list = subjectsOfSemester(sem);
+    var html = "";
+
+    list.forEach(function(name){
+      var rec = books[name] || {};
+      var bookUrl = safeUrl(rec.book), gdzUrl = safeUrl(rec.gdz);
+
+      if (booksEditing === name){
+        html +=
+          '<div class="book-row editing">' +
+            '<div class="book-name">' + escapeHtml(name) + '</div>' +
+            '<label class="book-label">Підручник</label>' +
+            '<input class="book-input" id="bk-book" type="url" inputmode="url" placeholder="https://..." value="' + escapeHtml(rec.book || "") + '">' +
+            '<label class="book-label">ГДЗ до нього</label>' +
+            '<input class="book-input" id="bk-gdz" type="url" inputmode="url" placeholder="https://..." value="' + escapeHtml(rec.gdz || "") + '">' +
+            '<div class="book-actions">' +
+              '<button class="btn-save" type="button" data-bact="save" data-name="' + escapeHtml(name) + '">Зберегти</button>' +
+              '<button class="btn-cancel" type="button" data-bact="cancel">Скасувати</button>' +
+            '</div>' +
+          '</div>';
+        return;
+      }
+
+      html +=
+        '<div class="book-row">' +
+          '<div class="book-head">' +
+            '<span class="book-name">' + escapeHtml(name) + '</span>' +
+            '<button class="icon-btn" type="button" data-bact="edit" data-name="' + escapeHtml(name) + '" aria-label="Змінити посилання">✎</button>' +
+          '</div>' +
+          (bookUrl
+            ? '<a class="book-link" href="' + escapeHtml(bookUrl) + '" target="_blank" rel="noopener noreferrer">Підручник</a>'
+            : '<button class="book-empty" type="button" data-bact="edit" data-name="' + escapeHtml(name) + '">Підручник — додати посилання</button>') +
+          (gdzUrl
+            ? '<a class="book-link gdz" href="' + escapeHtml(gdzUrl) + '" target="_blank" rel="noopener noreferrer">ГДЗ</a>'
+            : '<button class="book-empty gdz" type="button" data-bact="edit" data-name="' + escapeHtml(name) + '">ГДЗ — додати посилання</button>') +
+        '</div>';
+    });
+
+    document.getElementById("booksBody").innerHTML =
+      '<p class="books-hint">Предмети ' + (sem === 1 ? "першого" : "другого") + ' семестру. ' +
+      'Під кожним підручником — ГДЗ саме до нього. Посилання спільні для всього класу, якщо ввімкнено спільний режим.</p>' +
+      '<div class="book-list">' + html + '</div>';
+
+    if (booksEditing){
+      var inp = document.getElementById("bk-book");
+      if (inp) inp.focus();
+    }
+  }
+
+  function render(){ renderHero(); renderWeek(); renderGrades(); renderSchedule(); renderBooks(); }
 
   // ---------- backup ----------
   function exportBackup(){
@@ -1264,6 +1592,63 @@
     renderWeek();
   });
 
+  // субота: за який день вона цього тижня
+  document.getElementById("weekGrid").addEventListener("change", function(e){
+    if (!e.target.classList.contains("sat-select")) return;
+    var iso = e.target.getAttribute("data-date");
+    var w = parseInt(e.target.value, 10);
+    if (w >= 1 && w <= 5) satPlan[iso] = w; else delete satPlan[iso];
+    saveConfig("days");
+    render();
+  });
+
+  // семестри
+  document.getElementById("semTabs").addEventListener("click", function(e){
+    var b = e.target.closest("[data-sem]");
+    if (!b) return;
+    scheduleSem = parseInt(b.getAttribute("data-sem"), 10);
+    renderSchedule(); renderBooks();
+  });
+  document.getElementById("gradeScope").addEventListener("click", function(e){
+    var b = e.target.closest("[data-scope]");
+    if (!b) return;
+    var v = b.getAttribute("data-scope");
+    gradesScope = v === "all" ? "all" : parseInt(v, 10);
+    renderGrades();
+  });
+  ["s1from","s1to","s2from","s2to"].forEach(function(k){
+    document.getElementById("date-" + k).addEventListener("change", function(e){
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(e.target.value)) return;
+      semesters[k] = e.target.value;
+      saveConfig("semesters");
+      render();
+    });
+  });
+
+  // підручники
+  document.getElementById("booksBody").addEventListener("click", function(e){
+    var b = e.target.closest("[data-bact]");
+    if (!b) return;
+    var act = b.getAttribute("data-bact");
+    if (act === "edit"){ booksEditing = b.getAttribute("data-name"); renderBooks(); }
+    else if (act === "cancel"){ booksEditing = null; renderBooks(); }
+    else if (act === "save"){
+      var name = b.getAttribute("data-name");
+      var bookVal = document.getElementById("bk-book").value.trim();
+      var gdzVal = document.getElementById("bk-gdz").value.trim();
+      if ((bookVal && !safeUrl(bookVal)) || (gdzVal && !safeUrl(gdzVal))){
+        toast("Посилання має починатися з https://");
+        return;
+      }
+      if (!bookVal && !gdzVal) delete books[name];
+      else books[name] = { book: bookVal, gdz: gdzVal };
+      booksEditing = null;
+      saveConfig("books");
+      renderBooks();
+      toast("Збережено");
+    }
+  });
+
   document.getElementById("dayTabs").addEventListener("click", function(e){
     var btn = e.target.closest(".day-tab");
     if (!btn) return;
@@ -1350,13 +1735,23 @@
       document.getElementById("diary-view").hidden = target !== "diary";
       document.getElementById("grades-view").hidden = target !== "grades";
       document.getElementById("schedule-view").hidden = target !== "schedule";
+      document.getElementById("books-view").hidden = target !== "books";
     });
   });
 
-  renderSchedule();
   render();
   initStore();
 })();
+
+// Фіксована верстка: ніякого масштабування пальцями чи подвійним тапом.
+// Safari ігнорує user-scalable=no, тому глушимо його жести напряму.
+["gesturestart","gesturechange","gestureend"].forEach(function(ev){
+  document.addEventListener(ev, function(e){ e.preventDefault(); }, { passive: false });
+});
+document.addEventListener("dblclick", function(e){ e.preventDefault(); }, { passive: false });
+document.addEventListener("touchmove", function(e){
+  if (e.touches.length > 1) e.preventDefault();
+}, { passive: false });
 
 if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0){
   window.addEventListener("load", function(){
@@ -1392,7 +1787,7 @@ if (FIREBASE_CONFIG.projectId.indexOf("__") === 0){
 
     const app = initializeApp(FIREBASE_CONFIG);
     const db = initializeFirestore(app, { localCache: persistentLocalCache() });
-    let unsub = null;
+    let unsub = null, unsubCfg = null;
 
     window.Sync = {
       available: true,
@@ -1404,9 +1799,21 @@ if (FIREBASE_CONFIG.projectId.indexOf("__") === 0){
           onData(map);
         }, onError);
       },
-      disconnect(){ if (unsub){ unsub(); unsub = null; } },
+      connectConfig(room, onConfig, onError){
+        if (unsubCfg){ unsubCfg(); unsubCfg = null; }
+        unsubCfg = onSnapshot(collection(db, "rooms", room, "config"), snap => {
+          const out = {};
+          snap.forEach(d => { out[d.id] = d.data(); });
+          onConfig(out);
+        }, onError);
+      },
+      disconnect(){
+        if (unsub){ unsub(); unsub = null; }
+        if (unsubCfg){ unsubCfg(); unsubCfg = null; }
+      },
       set(room, id, data){ return setDoc(doc(db, "rooms", room, "homework", id), data); },
-      remove(room, id){ return deleteDoc(doc(db, "rooms", room, "homework", id)); }
+      remove(room, id){ return deleteDoc(doc(db, "rooms", room, "homework", id)); },
+      setConfig(room, id, data){ return setDoc(doc(db, "rooms", room, "config", id), data); }
     };
     window.dispatchEvent(new Event("sync-ready"));
   } catch (e) {
