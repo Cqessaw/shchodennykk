@@ -95,6 +95,10 @@
     font-family:"Golos Text","Segoe UI",system-ui,sans-serif;
     font-size:15px;line-height:1.5;
     -webkit-font-smoothing:antialiased;
+    /* Відступ під «острівець», чубчик і нижню смужку iPhone.
+       На пристроях без них значення дорівнюють нулю. */
+    padding:env(safe-area-inset-top) env(safe-area-inset-right)
+            env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
   .app{max-width:1180px;margin:0 auto;padding:24px 20px 64px;}
   button{font-family:inherit;}
@@ -559,7 +563,7 @@
   .book-actions{display:flex;gap:7px;}
 
   .toast{
-    position:fixed;left:50%;bottom:24px;transform:translateX(-50%);
+    position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);
     background:var(--panel);border:1px solid var(--line-strong);
     color:var(--text);padding:11px 20px;border-radius:999px;font-size:13px;font-weight:600;
     box-shadow:var(--shadow-lift);z-index:50;
