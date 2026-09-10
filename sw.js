@@ -1,4 +1,4 @@
-﻿var CACHE = "shchodennyk-v14";
+﻿var CACHE = "shchodennyk-v15";
 var SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png"];
 
 self.addEventListener("install", function(e){
